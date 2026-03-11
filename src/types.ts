@@ -1,0 +1,64 @@
+export type TimeControlType = 'byoyomi' | 'canadian' | 'fischer' | 'absolute';
+
+export interface AbsoluteConfig {
+  type: 'absolute';
+  mainTime: number; // secondes
+}
+
+export interface ByoyomiConfig {
+  type: 'byoyomi';
+  mainTime: number; // secondes
+  periods: number;
+  periodTime: number; // secondes par période
+}
+
+export interface CanadianConfig {
+  type: 'canadian';
+  mainTime: number; // secondes
+  movesPerPeriod: number;
+  periodTime: number; // secondes pour la période
+}
+
+export interface FischerConfig {
+  type: 'fischer';
+  mainTime: number; // secondes
+  increment: number; // secondes ajoutées par coup
+}
+
+export type TimeControlConfig =
+  | AbsoluteConfig
+  | ByoyomiConfig
+  | CanadianConfig
+  | FischerConfig;
+
+export type Player = 'black' | 'white';
+export type GameStatus = 'idle' | 'running' | 'paused' | 'finished';
+
+export interface PlayerState {
+  mainTimeLeft: number; // secondes
+  inOvertime: boolean;
+  hasLost: boolean;
+  moveCount: number; // nombre de coups joués
+  // Byoyomi
+  periodsLeft: number;
+  byoyomiTimeLeft: number; // secondes restantes dans la période courante
+  // Canadian
+  movesLeftInPeriod: number;
+  canadianTimeLeft: number; // secondes restantes dans la période canadienne
+}
+
+export interface GameState {
+  config: TimeControlConfig;
+  black: PlayerState;
+  white: PlayerState;
+  activePlayer: Player;
+  firstPlayer: Player;
+  status: GameStatus;
+  winner: Player | null;
+}
+
+export interface Preset {
+  name: string;
+  description: string;
+  config: TimeControlConfig;
+}

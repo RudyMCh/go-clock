@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <radialGradient id="stone" cx="38%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#3A3A3E"/>
+      <stop offset="100%" stop-color="#141416"/>
+    </radialGradient>
+    <radialGradient id="sheen" cx="33%" cy="28%" r="35%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.16)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#0D0D0F"/>
+
+  <!-- Go stone -->
+  <circle cx="512" cy="512" r="390" fill="url(#stone)"/>
+  <circle cx="512" cy="512" r="390" fill="url(#sheen)"/>
+
+  <!-- Hour hand — 10 o'clock (rotate -60°), length ~210px -->
+  <line x1="512" y1="512" x2="512" y2="302"
+        stroke="#F5A623" stroke-width="30" stroke-linecap="round"
+        transform="rotate(-60, 512, 512)"/>
+
+  <!-- Minute hand — 10 minutes / 2 o'clock (rotate +60°), length ~268px -->
+  <line x1="512" y1="512" x2="512" y2="244"
+        stroke="#F5A623" stroke-width="20" stroke-linecap="round"
+        transform="rotate(60, 512, 512)"/>
+
+  <!-- Center pivot -->
+  <circle cx="512" cy="512" r="20" fill="#F5A623"/>
+</svg>
