@@ -12,7 +12,9 @@
       "backgroundColor": "#0D0D0F"
     },
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.goclock.app",
+      "supportsTablet": true,
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.goclock.app",
@@ -27,6 +29,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7530ea81-1550-453f-b835-e000a529e926"
+      }
+    },
+    "owner": "kapoupa"
   }
 }

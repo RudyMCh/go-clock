@@ -352,9 +352,9 @@ export default function SetupScreen({ onStart }: Props) {
                 label={t.incrementPerMove}
                 value={fisIncSecs}
                 unit={t.unitSec}
-                onIncrease={() => setFisIncSecs((v) => v + 5)}
-                onDecrease={() => setFisIncSecs((v) => Math.max(5, v - 5))}
-                canDecrease={fisIncSecs > 5}
+                onIncrease={() => setFisIncSecs((v) => v + 1)}
+                onDecrease={() => setFisIncSecs((v) => Math.max(1, v - 1))}
+                canDecrease={fisIncSecs > 1}
               />
             </>
           )}

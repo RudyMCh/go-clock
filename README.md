@@ -46,3 +46,50 @@ Requires the [Expo Go](https://expo.dev/go) app on your device, or a configured 
 4. The first player taps their half of the screen to begin — each subsequent tap ends your move and starts the opponent's clock
 5. Tap the **opponent's half** to pause; tap anywhere to resume
 6. Use the center bar to pause ⏸, reset ↺, or go back ←
+
+
+  ---                                                                                                                                                                           
+  Workflow de publication                                                                                                                                                       
+                                                                                                                                                                                
+  Première fois                                                                                                                                                                 
+                                                            
+  npm install -g eas-cli
+  eas login          # crée un compte Expo si nécessaire
+  eas init           # lie le projet à ton compte Expo (génère un projectId dans app.json)
+
+  Build de test (APK direct sur téléphone, sans store)
+
+  eas build --platform android --profile preview
+  # → télécharge l'APK et installe-le directement sur ton Android
+
+  Build de production
+
+  eas build --platform android --profile production   # → .aab pour le Play Store
+  eas build --platform ios --profile production       # → .ipa pour l'App Store
+  Les builds tournent sur les serveurs Expo (~10–15 min). Pas besoin de Mac pour iOS.
+
+  Soumission
+
+  Avant eas submit, il faut remplir les 3 champs dans eas.json > submit.production.ios :
+  - appleId : ton adresse Apple Developer
+  - ascAppId : l'ID de l'app créée dans App Store Connect
+  - appleTeamId : visible dans ton profil Apple Developer
+
+  Pour Android, télécharge le fichier JSON de compte de service depuis la Google Play Console (Accès API) et place-le à la racine sous le nom google-service-account.json (déjà
+  dans le .gitignore).
+
+  eas submit --platform android --profile production
+  eas submit --platform ios --profile production
+
+  ---
+  Les profiles eas.json :
+
+  ┌─────────────┬──────────────────────────────────────────────────────────┐
+  │   Profile   │                          Usage                           │
+  ├─────────────┼──────────────────────────────────────────────────────────┤
+  │ development │ Dev client (hot reload natif)                            │
+  ├─────────────┼──────────────────────────────────────────────────────────┤
+  │ preview     │ APK à installer directement pour les tests               │
+  ├─────────────┼──────────────────────────────────────────────────────────┤
+  │ production  │ AAB/IPA signé pour les stores, auto-incrément de version │
+  └─────────────┴──────────────────────────────────────────────────────────┘
