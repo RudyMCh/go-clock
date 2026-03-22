@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TimeControlConfig, Player } from './src/types';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LanguageProvider } from './src/i18n/LanguageContext';
 import SetupScreen from './src/screens/SetupScreen';
 import GameScreen from './src/screens/GameScreen';
@@ -28,8 +29,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <SafeAreaProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </SafeAreaProvider>
   );
 }

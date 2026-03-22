@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
-  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   TimeControlConfig,
@@ -92,6 +91,8 @@ export default function SetupScreen({ onStart }: Props) {
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<TimeControlType>('byoyomi');
+  const [showChevron, setShowChevron] = useState(true);
+  const presetContainerWidth = useRef(0);
   const [firstPlayer, setFirstPlayer] = useState<Player>('black');
 
   // Byoyomi
@@ -193,6 +194,9 @@ export default function SetupScreen({ onStart }: Props) {
     }
   };
 
+  // Réinitialise le chevron à chaque changement d'onglet
+  useEffect(() => { setShowChevron(true); }, [activeTab]);
+
   const TABS: { key: TimeControlType; label: string }[] = [
     { key: 'byoyomi', label: t.byoyomi },
     { key: 'canadian', label: t.canadian },
@@ -240,23 +244,39 @@ export default function SetupScreen({ onStart }: Props) {
 
         {/* Préréglages */}
         <Text style={s.sectionTitle}>{t.presets}</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={s.presetsScroll}
-          contentContainerStyle={s.presetsContent}
-        >
-          {PRESETS.filter((p) => p.config.type === activeTab).map((preset) => (
-            <TouchableOpacity
-              key={preset.nameKey}
-              style={s.presetCard}
-              onPress={() => applyPreset(preset)}
-            >
-              <Text style={s.presetName}>{t.presetNames[preset.nameKey]}</Text>
-              <Text style={s.presetDesc}>{preset.description}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View style={s.presetsWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={s.presetsScroll}
+            contentContainerStyle={s.presetsContent}
+            scrollEventThrottle={16}
+            onLayout={(e) => { presetContainerWidth.current = e.nativeEvent.layout.width; }}
+            onContentSizeChange={(w) => {
+              setShowChevron(w > presetContainerWidth.current + 10);
+            }}
+            onScroll={(e) => {
+              const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+              setShowChevron(contentOffset.x < contentSize.width - layoutMeasurement.width - 10);
+            }}
+          >
+            {PRESETS.filter((p) => p.config.type === activeTab).map((preset) => (
+              <TouchableOpacity
+                key={preset.nameKey}
+                style={s.presetCard}
+                onPress={() => applyPreset(preset)}
+              >
+                <Text style={s.presetName}>{t.presetNames[preset.nameKey]}</Text>
+                <Text style={s.presetDesc}>{preset.description}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {showChevron && (
+            <View style={s.presetChevron} pointerEvents="none">
+              <Text style={s.presetChevronText}>›</Text>
+            </View>
+          )}
+        </View>
 
         {/* Paramètres */}
         <View style={s.configBlock}>
@@ -392,7 +412,7 @@ export default function SetupScreen({ onStart }: Props) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0D0D0F' },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 40 : 16 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 16 },
 
   langRow: {
     flexDirection: 'row',
@@ -424,8 +444,20 @@ const s = StyleSheet.create({
     marginBottom: 10,
   },
 
-  presetsScroll: { marginBottom: 24, marginHorizontal: -20 },
+  presetsWrapper: { marginHorizontal: -20, marginBottom: 24 },
+  presetsScroll: {},
   presetsContent: { paddingHorizontal: 20, gap: 10 },
+  presetChevron: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(13, 13, 15, 0.85)',
+  },
+  presetChevronText: { color: '#F5A623', fontSize: 28, fontWeight: '200' },
   presetCard: {
     backgroundColor: '#1C1C1E',
     borderRadius: 12,
@@ -506,7 +538,7 @@ const s = StyleSheet.create({
   stickyFooter: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    paddingBottom: Platform.OS === 'android' ? 16 : 12,
+    paddingBottom: 12,
     backgroundColor: '#0D0D0F',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#2C2C2E',
