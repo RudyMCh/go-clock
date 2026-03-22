@@ -5,8 +5,10 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as NavigationBar from 'expo-navigation-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   TimeControlConfig,
@@ -18,6 +20,21 @@ import {
   Preset,
   Player,
 } from '../types';
+import { Translations } from '../i18n/translations';
+
+function formatPresetDesc(config: TimeControlConfig, t: Translations): string {
+  const mins = Math.floor(config.mainTime / 60);
+  switch (config.type) {
+    case 'byoyomi':
+      return `${mins} ${t.unitMin} + ${config.periods}×${config.periodTime} ${t.unitSec}`;
+    case 'canadian':
+      return `${mins} ${t.unitMin} + ${config.movesPerPeriod} / ${Math.floor(config.periodTime / 60)} ${t.unitMin}`;
+    case 'fischer':
+      return `${mins} ${t.unitMin} + ${config.increment} ${t.unitSec}`;
+    case 'absolute':
+      return `${mins} ${t.unitMin}`;
+  }
+}
 import { PRESETS } from '../logic/presets';
 import { useTranslation } from '../i18n/LanguageContext';
 import { Language, LANGUAGE_LABELS } from '../i18n/translations';
@@ -194,6 +211,13 @@ export default function SetupScreen({ onStart }: Props) {
     }
   };
 
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    NavigationBar.setVisibilityAsync('hidden');
+    NavigationBar.setBehaviorAsync('overlay-swipe');
+    return () => { NavigationBar.setVisibilityAsync('visible'); };
+  }, []);
+
   // Réinitialise le chevron à chaque changement d'onglet
   useEffect(() => { setShowChevron(true); }, [activeTab]);
 
@@ -267,7 +291,7 @@ export default function SetupScreen({ onStart }: Props) {
                 onPress={() => applyPreset(preset)}
               >
                 <Text style={s.presetName}>{t.presetNames[preset.nameKey]}</Text>
-                <Text style={s.presetDesc}>{preset.description}</Text>
+                <Text style={s.presetDesc}>{formatPresetDesc(preset.config, t)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>

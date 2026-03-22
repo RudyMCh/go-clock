@@ -61,6 +61,5 @@ export type PresetNameKey = 'blitz' | 'online' | 'club' | 'egf' | 'long' | 'rapi
 
 export interface Preset {
   nameKey: PresetNameKey;
-  description: string;
   config: TimeControlConfig;
 }

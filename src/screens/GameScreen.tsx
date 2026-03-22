@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
+import * as NavigationBar from 'expo-navigation-bar';
+import { Platform } from 'react-native';
 import { GameState, TimeControlConfig, Player, PlayerState } from '../types';
 import { useSoundAlerts } from '../hooks/useSoundAlerts';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -112,6 +114,13 @@ interface Props {
 
 export default function GameScreen({ config, firstPlayer, onBack }: Props) {
   useKeepAwake();
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    NavigationBar.setVisibilityAsync('hidden');
+    NavigationBar.setBehaviorAsync('overlay-swipe');
+    return () => { NavigationBar.setVisibilityAsync('visible'); };
+  }, []);
   const [gameState, setGameState] = useState<GameState>(() => createGameState(config, firstPlayer));
 
   // Refs pour le timer (évite les captures de closures obsolètes)
