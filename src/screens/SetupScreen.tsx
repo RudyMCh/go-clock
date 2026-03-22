@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -247,7 +248,7 @@ export default function SetupScreen({ onStart }: Props) {
           style={s.presetsScroll}
           contentContainerStyle={s.presetsContent}
         >
-          {PRESETS.map((preset) => (
+          {PRESETS.filter((p) => p.config.type === activeTab).map((preset) => (
             <TouchableOpacity
               key={preset.name}
               style={s.presetCard}
@@ -286,8 +287,8 @@ export default function SetupScreen({ onStart }: Props) {
                 label={t.mainTime}
                 value={byoMainMins}
                 unit={t.unitMin}
-                onIncrease={() => setByoMainMins((v) => v + 5)}
-                onDecrease={() => setByoMainMins((v) => Math.max(0, v - 5))}
+                onIncrease={() => setByoMainMins((v) => v + 1)}
+                onDecrease={() => setByoMainMins((v) => Math.max(0, v - 1))}
                 canDecrease={byoMainMins > 0}
               />
               <Stepper
@@ -302,9 +303,9 @@ export default function SetupScreen({ onStart }: Props) {
                 label={t.periodDuration}
                 value={byoPeriodSecs}
                 unit={t.unitSec}
-                onIncrease={() => setByoPeriodSecs((v) => v + 5)}
-                onDecrease={() => setByoPeriodSecs((v) => Math.max(5, v - 5))}
-                canDecrease={byoPeriodSecs > 5}
+                onIncrease={() => setByoPeriodSecs((v) => v + 1)}
+                onDecrease={() => setByoPeriodSecs((v) => Math.max(1, v - 1))}
+                canDecrease={byoPeriodSecs > 1}
               />
             </>
           )}
@@ -315,17 +316,17 @@ export default function SetupScreen({ onStart }: Props) {
                 label={t.mainTime}
                 value={canMainMins}
                 unit={t.unitMin}
-                onIncrease={() => setCanMainMins((v) => v + 5)}
-                onDecrease={() => setCanMainMins((v) => Math.max(0, v - 5))}
+                onIncrease={() => setCanMainMins((v) => v + 1)}
+                onDecrease={() => setCanMainMins((v) => Math.max(0, v - 1))}
                 canDecrease={canMainMins > 0}
               />
               <Stepper
                 label={t.movesPerPeriod}
                 value={canMoves}
                 unit={t.unitMoves}
-                onIncrease={() => setCanMoves((v) => v + 5)}
-                onDecrease={() => setCanMoves((v) => Math.max(5, v - 5))}
-                canDecrease={canMoves > 5}
+                onIncrease={() => setCanMoves((v) => v + 1)}
+                onDecrease={() => setCanMoves((v) => Math.max(1, v - 1))}
+                canDecrease={canMoves > 1}
               />
               <Stepper
                 label={t.periodDuration}
@@ -364,9 +365,9 @@ export default function SetupScreen({ onStart }: Props) {
               label={t.totalTime}
               value={absMainMins}
               unit={t.unitMin}
-              onIncrease={() => setAbsMainMins((v) => v + 5)}
-              onDecrease={() => setAbsMainMins((v) => Math.max(5, v - 5))}
-              canDecrease={absMainMins > 5}
+              onIncrease={() => setAbsMainMins((v) => v + 1)}
+              onDecrease={() => setAbsMainMins((v) => Math.max(1, v - 1))}
+              canDecrease={absMainMins > 1}
             />
           )}
         </View>
@@ -415,7 +416,7 @@ export default function SetupScreen({ onStart }: Props) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0D0D0F' },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 16 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 40 : 16 },
 
   langRow: {
     flexDirection: 'row',

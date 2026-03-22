@@ -40,7 +40,8 @@ function getCriticalSeconds(
   }
 
   // Absolu et Fischer : la pendule principale mène directement à la défaite
-  return playerState.mainTimeLeft;
+  if (playerState.mainTimeLeft <= 30) return playerState.mainTimeLeft;
+  return null;
 }
 
 export function useSoundAlerts(gameState: GameState) {

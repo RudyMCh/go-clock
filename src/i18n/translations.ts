@@ -75,7 +75,7 @@ const fr: Translations = {
   appName: 'Horloge de Go',
   appSubtitle: 'Configurez le contrôle de temps',
   presets: 'Préréglages',
-  timeControlType: 'Type de contrôle',
+  timeControlType: 'Mode',
   startGame: 'Démarrer la partie',
   custom: 'Personnalisé',
 
@@ -140,7 +140,7 @@ const en: Translations = {
   appName: 'Go Clock',
   appSubtitle: 'Configure time control',
   presets: 'Presets',
-  timeControlType: 'Time control type',
+  timeControlType: 'Mode',
   startGame: 'Start game',
   custom: 'Custom',
 
@@ -205,7 +205,7 @@ const ko: Translations = {
   appName: '바둑 시계',
   appSubtitle: '시간 설정',
   presets: '사전 설정',
-  timeControlType: '시간 방식',
+  timeControlType: '방식',
   startGame: '게임 시작',
   custom: '직접 설정',
 
@@ -270,7 +270,7 @@ const ja: Translations = {
   appName: '囲碁時計',
   appSubtitle: '持ち時間を設定',
   presets: 'プリセット',
-  timeControlType: '時間制御',
+  timeControlType: 'モード',
   startGame: '対局開始',
   custom: 'カスタム',
 
@@ -335,7 +335,7 @@ const zh: Translations = {
   appName: '围棋计时',
   appSubtitle: '配置用时规则',
   presets: '预设',
-  timeControlType: '计时类型',
+  timeControlType: '模式',
   startGame: '开始对局',
   custom: '自定义',
 

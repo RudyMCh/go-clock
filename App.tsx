@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TimeControlConfig, Player } from './src/types';
 import { LanguageProvider } from './src/i18n/LanguageContext';
 import SetupScreen from './src/screens/SetupScreen';
 import GameScreen from './src/screens/GameScreen';
+
+import * as SplashScreen from 'expo-splash-screen';
+SplashScreen.preventAutoHideAsync();
 
 type Screen = 'setup' | 'game';
 
@@ -27,6 +30,8 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => { SplashScreen.hideAsync(); }, []);
+
   return (
     <LanguageProvider>
       <AppContent />

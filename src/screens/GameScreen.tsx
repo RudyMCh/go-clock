@@ -6,6 +6,7 @@ import {
   StyleSheet,
   StatusBar,
   Alert,
+  BackHandler,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -269,17 +270,25 @@ export default function GameScreen({ config, firstPlayer, onBack }: Props) {
     ]);
   }, [onBack, stopInterval, t]);
 
+  // Bouton retour Android
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [handleBack]);
+
   useSoundAlerts(gameState);
 
   const { black, white, activePlayer, status } = gameState;
 
   const statusLabel = () => {
-    if (status === 'idle') return t.tapToStart;
     if (status === 'paused') return t.paused;
     if (status === 'finished') {
       return gameState.winner === 'black' ? t.blackWins : t.whiteWins;
     }
-    return activePlayer === 'black' ? t.blackTurn : t.whiteTurn;
+    return '';
   };
 
   const isPauseEnabled = status === 'running' || status === 'paused';
@@ -341,6 +350,17 @@ export default function GameScreen({ config, firstPlayer, onBack }: Props) {
         gameStatus={status}
         onPress={() => handlePlayerPress('white')}
       />
+
+      {/* Overlay de démarrage — couvre tout l'écran tant que idle */}
+      {status === 'idle' && (
+        <TouchableOpacity
+          style={styles.startOverlay}
+          onPress={() => handlePlayerPress(firstPlayer)}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.startOverlayText}>{t.startGame}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -387,5 +407,19 @@ const styles = StyleSheet.create({
   controlBtnText: {
     color: '#FFF',
     fontSize: 18,
+  },
+  startOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.88)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  startOverlayText: {
+    color: '#F5A623',
+    fontSize: 36,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 });
