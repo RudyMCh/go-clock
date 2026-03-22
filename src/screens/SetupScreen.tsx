@@ -209,20 +209,6 @@ export default function SetupScreen({ onStart }: Props) {
     }
   };
 
-  const getSummary = (): string => {
-    const config = buildConfig();
-    if (config.type === 'byoyomi') {
-      const main = config.mainTime > 0 ? `${config.mainTime / 60} ${t.unitMin} + ` : '';
-      return `${main}${config.periods} × ${config.periodTime}${t.unitSec} ${t.byoyomi}`;
-    }
-    if (config.type === 'canadian') {
-      return `${config.mainTime / 60} ${t.unitMin} + ${config.movesPerPeriod} ${t.unitMoves} / ${config.periodTime / 60} ${t.unitMin}`;
-    }
-    if (config.type === 'fischer') {
-      return `${config.mainTime / 60} ${t.unitMin} + ${config.increment}${t.unitSec} / ${t.unitMoves}`;
-    }
-    return `${config.mainTime / 60} ${t.unitMin}`;
-  };
 
   return (
     <SafeAreaView style={s.root}>
@@ -371,11 +357,6 @@ export default function SetupScreen({ onStart }: Props) {
           )}
         </View>
 
-        {/* Résumé */}
-        <View style={s.summaryBlock}>
-          <Text style={s.summaryText}>{getSummary()}</Text>
-        </View>
-
         {/* Premier joueur */}
         <View style={s.firstPlayerRow}>
           <Text style={s.firstPlayerLabel}>{t.firstPlayer}</Text>
@@ -505,12 +486,6 @@ const s = StyleSheet.create({
     color: '#F5A623', fontSize: 16, fontWeight: '600',
     minWidth: 70, textAlign: 'center',
   },
-
-  summaryBlock: {
-    backgroundColor: '#1C1C1E', borderRadius: 12,
-    padding: 16, marginBottom: 24, alignItems: 'center',
-  },
-  summaryText: { color: '#F5A623', fontSize: 16, fontWeight: '600', textAlign: 'center' },
 
   firstPlayerRow: {
     flexDirection: 'row',
