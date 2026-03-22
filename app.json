@@ -20,14 +20,7 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": [
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#0D0D0F"
-        }
-      ]
-    ],
+    "plugins": [],
     "extra": {
       "eas": {
         "projectId": "7530ea81-1550-453f-b835-e000a529e926"
