@@ -393,7 +393,7 @@ const zh: Translations = {
   byoyomi: '读秒',
   canadian: '加拿大制',
   fischer: '费舍尔',
-  absolute: '绝对计时',
+  absolute: '包棋',
   byoyomiDesc:
     '日本式：主时间结束后进入N次X秒读秒。在读秒时间内落子则重置读秒。',
   canadianDesc:
@@ -443,7 +443,7 @@ const zh: Translations = {
   movesLeft: (n) => `剩余${n}手`,
   canadianInfo: (moves, time) => `加拿大: ${moves}手 / ${time}`,
   perMove: (inc) => `+${inc}秒/手`,
-  suddenDeath: '绝对计时',
+  suddenDeath: '包棋',
   moveCount: (n) => `${n}手`,
 
   presetNames: {

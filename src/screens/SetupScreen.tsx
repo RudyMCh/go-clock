@@ -209,7 +209,6 @@ export default function SetupScreen({ onStart }: Props) {
     }
   };
 
-
   return (
     <SafeAreaView style={s.root}>
       <ScrollView
@@ -220,10 +219,24 @@ export default function SetupScreen({ onStart }: Props) {
         {/* Sélecteur de langue */}
         <LanguageSelector />
 
-        {/* Titre */}
-        <View style={s.titleBlock}>
-          <Text style={s.titleMain}>{t.appName}</Text>
+        {/* Onglets mode */}
+        <Text style={s.sectionTitle}>{t.timeControlType}</Text>
+        <View style={s.tabs}>
+          {TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[s.tab, activeTab === tab.key && s.tabActive]}
+              onPress={() => setActiveTab(tab.key)}
+            >
+              <Text style={[s.tabText, activeTab === tab.key && s.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
+
+        {/* Description */}
+        <Text style={s.modeDesc}>{getModeDesc()}</Text>
 
         {/* Préréglages */}
         <Text style={s.sectionTitle}>{t.presets}</Text>
@@ -244,25 +257,6 @@ export default function SetupScreen({ onStart }: Props) {
             </TouchableOpacity>
           ))}
         </ScrollView>
-
-        {/* Onglets */}
-        <Text style={s.sectionTitle}>{t.timeControlType}</Text>
-        <View style={s.tabs}>
-          {TABS.map((tab) => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[s.tab, activeTab === tab.key && s.tabActive]}
-              onPress={() => setActiveTab(tab.key)}
-            >
-              <Text style={[s.tabText, activeTab === tab.key && s.tabTextActive]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Description */}
-        <Text style={s.modeDesc}>{getModeDesc()}</Text>
 
         {/* Paramètres */}
         <View style={s.configBlock}>
@@ -380,13 +374,15 @@ export default function SetupScreen({ onStart }: Props) {
           </View>
         </View>
 
-        {/* Bouton démarrer */}
+        <View style={s.bottomPadding} />
+      </ScrollView>
+
+      {/* Bouton sticky */}
+      <View style={s.stickyFooter}>
         <TouchableOpacity style={s.startBtn} onPress={() => { saveConfig(); onStart(buildConfig(), firstPlayer); }}>
           <Text style={s.startBtnText}>{t.startGame}</Text>
         </TouchableOpacity>
-
-        <View style={s.bottomPadding} />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -419,10 +415,6 @@ const s = StyleSheet.create({
   langBtnText: { color: '#888', fontSize: 22 },
   langBtnTextActive: { color: '#F5A623' },
 
-  titleBlock: { alignItems: 'center', marginBottom: 28 },
-  titleMain: { fontSize: 30, fontWeight: '700', color: '#FFF', letterSpacing: -0.5 },
-  titleSub: { fontSize: 14, color: '#666', marginTop: 4 },
-
   sectionTitle: {
     fontSize: 11,
     fontWeight: '600',
@@ -432,7 +424,7 @@ const s = StyleSheet.create({
     marginBottom: 10,
   },
 
-  presetsScroll: { marginBottom: 28, marginHorizontal: -20 },
+  presetsScroll: { marginBottom: 24, marginHorizontal: -20 },
   presetsContent: { paddingHorizontal: 20, gap: 10 },
   presetCard: {
     backgroundColor: '#1C1C1E',
@@ -511,10 +503,18 @@ const s = StyleSheet.create({
   firstPlayerBtnText: { color: '#888', fontSize: 14, fontWeight: '500' },
   firstPlayerBtnTextActive: { color: '#000', fontWeight: '700' },
 
+  stickyFooter: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingBottom: Platform.OS === 'android' ? 16 : 12,
+    backgroundColor: '#0D0D0F',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#2C2C2E',
+  },
   startBtn: {
     backgroundColor: '#F5A623', borderRadius: 16,
     paddingVertical: 18, alignItems: 'center',
   },
   startBtnText: { color: '#000', fontSize: 18, fontWeight: '700' },
-  bottomPadding: { height: 32 },
+  bottomPadding: { height: 16 },
 });
