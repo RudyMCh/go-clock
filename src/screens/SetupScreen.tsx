@@ -237,7 +237,6 @@ export default function SetupScreen({ onStart }: Props) {
         {/* Titre */}
         <View style={s.titleBlock}>
           <Text style={s.titleMain}>{t.appName}</Text>
-          <Text style={s.titleSub}>{t.appSubtitle}</Text>
         </View>
 
         {/* Préréglages */}
@@ -250,11 +249,11 @@ export default function SetupScreen({ onStart }: Props) {
         >
           {PRESETS.filter((p) => p.config.type === activeTab).map((preset) => (
             <TouchableOpacity
-              key={preset.name}
+              key={preset.nameKey}
               style={s.presetCard}
               onPress={() => applyPreset(preset)}
             >
-              <Text style={s.presetName}>{preset.name}</Text>
+              <Text style={s.presetName}>{t.presetNames[preset.nameKey]}</Text>
               <Text style={s.presetDesc}>{preset.description}</Text>
             </TouchableOpacity>
           ))}
@@ -420,8 +419,7 @@ const s = StyleSheet.create({
 
   langRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     marginBottom: 20,
     justifyContent: 'center',
   },
@@ -437,8 +435,8 @@ const s = StyleSheet.create({
     borderColor: '#F5A623',
     backgroundColor: '#2A2000',
   },
-  langBtnText: { color: '#888', fontSize: 13 },
-  langBtnTextActive: { color: '#F5A623', fontWeight: '700' },
+  langBtnText: { color: '#888', fontSize: 22 },
+  langBtnTextActive: { color: '#F5A623' },
 
   titleBlock: { alignItems: 'center', marginBottom: 28 },
   titleMain: { fontSize: 30, fontWeight: '700', color: '#FFF', letterSpacing: -0.5 },

@@ -69,10 +69,21 @@ export interface Translations {
   perMove: (inc: number) => string;
   suddenDeath: string;
   moveCount: (n: number) => string;
+
+  // Preset names
+  presetNames: {
+    blitz: string;
+    online: string;
+    club: string;
+    egf: string;
+    long: string;
+    rapid: string;
+    standard: string;
+  };
 }
 
 const fr: Translations = {
-  appName: 'Horloge de Go',
+  appName: 'Pendule de Go',
   appSubtitle: 'Configurez le contrôle de temps',
   presets: 'Préréglages',
   timeControlType: 'Mode',
@@ -134,6 +145,16 @@ const fr: Translations = {
   perMove: (inc) => `+${inc}s / coup`,
   suddenDeath: 'Mort subite',
   moveCount: (n) => `${n} coup${n > 1 ? 's' : ''}`,
+
+  presetNames: {
+    blitz: 'Blitz',
+    online: 'En ligne',
+    club: 'Club',
+    egf: 'EGF',
+    long: 'Long',
+    rapid: 'Rapide',
+    standard: 'Standard',
+  },
 };
 
 const en: Translations = {
@@ -199,6 +220,16 @@ const en: Translations = {
   perMove: (inc) => `+${inc}s / move`,
   suddenDeath: 'Sudden death',
   moveCount: (n) => `${n} move${n > 1 ? 's' : ''}`,
+
+  presetNames: {
+    blitz: 'Blitz',
+    online: 'Online',
+    club: 'Club',
+    egf: 'EGF',
+    long: 'Long',
+    rapid: 'Rapid',
+    standard: 'Standard',
+  },
 };
 
 const ko: Translations = {
@@ -250,7 +281,7 @@ const ko: Translations = {
   quitMessage: '설정 화면으로 돌아가시겠습니까?',
   quit: '나가기',
 
-  firstPlayer: '선착',
+  firstPlayer: '선수',
   blackFirst: '흑',
   whiteFirst: '백',
 
@@ -258,12 +289,22 @@ const ko: Translations = {
   white: '백',
   wins: '승!',
   timeout: '시간 초과!',
-  canadianOvertime: '캐나다 초과',
+  canadianOvertime: '캐나다 초읽기',
   movesLeft: (n) => `${n}수 남음`,
   canadianInfo: (moves, time) => `캐나다: ${moves}수 / ${time}`,
   perMove: (inc) => `+${inc}초 / 수`,
   suddenDeath: '절대 시간',
   moveCount: (n) => `${n}수`,
+
+  presetNames: {
+    blitz: '블리츠',
+    online: '온라인',
+    club: '클럽',
+    egf: 'EGF',
+    long: '장기',
+    rapid: '빠른',
+    standard: '기본',
+  },
 };
 
 const ja: Translations = {
@@ -329,6 +370,16 @@ const ja: Translations = {
   perMove: (inc) => `+${inc}秒 / 手`,
   suddenDeath: '切れ負け',
   moveCount: (n) => `${n}手`,
+
+  presetNames: {
+    blitz: 'ブリッツ',
+    online: 'オンライン',
+    club: 'クラブ',
+    egf: 'EGF',
+    long: '長時間',
+    rapid: '早碁',
+    standard: '標準',
+  },
 };
 
 const zh: Translations = {
@@ -367,8 +418,8 @@ const zh: Translations = {
 
   tapToStart: '点击黑方时钟开始',
   paused: '暂停',
-  blackWins: '黑方超时负！',
-  whiteWins: '白方超时负！',
+  blackWins: '黑方胜！',
+  whiteWins: '白方胜！',
   blackTurn: '黑方行棋',
   whiteTurn: '白方行棋',
 
@@ -388,20 +439,30 @@ const zh: Translations = {
   white: '白',
   wins: '胜！',
   timeout: '超时！',
-  canadianOvertime: '加拿大超时',
+  canadianOvertime: '加拿大延长',
   movesLeft: (n) => `剩余${n}手`,
   canadianInfo: (moves, time) => `加拿大: ${moves}手 / ${time}`,
   perMove: (inc) => `+${inc}秒/手`,
   suddenDeath: '绝对计时',
   moveCount: (n) => `${n}手`,
+
+  presetNames: {
+    blitz: '快棋',
+    online: '在线',
+    club: '俱乐部',
+    egf: 'EGF',
+    long: '慢棋',
+    rapid: '快速',
+    standard: '标准',
+  },
 };
 
 export const TRANSLATIONS: Record<Language, Translations> = { fr, en, ko, ja, zh };
 
 export const LANGUAGE_LABELS: Record<Language, string> = {
-  fr: '🇫🇷 FR',
-  en: '🇬🇧 EN',
-  ko: '🇰🇷 한국어',
-  ja: '🇯🇵 日本語',
-  zh: '🇨🇳 中文',
+  fr: '🇫🇷',
+  en: '🇬🇧',
+  ko: '🇰🇷',
+  ja: '🇯🇵',
+  zh: '🇨🇳',
 };

@@ -57,8 +57,10 @@ export interface GameState {
   winner: Player | null;
 }
 
+export type PresetNameKey = 'blitz' | 'online' | 'club' | 'egf' | 'long' | 'rapid' | 'standard';
+
 export interface Preset {
-  name: string;
+  nameKey: PresetNameKey;
   description: string;
   config: TimeControlConfig;
 }
