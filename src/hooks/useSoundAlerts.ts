@@ -3,9 +3,9 @@ import { Audio } from 'expo-av';
 import { GameState, TimeControlConfig, PlayerState } from '../types';
 
 const SOUNDS = {
-  beep: require('../../assets/sounds/beep.wav'),
-  beepUrgent: require('../../assets/sounds/beep_urgent.wav'),
-  alarm: require('../../assets/sounds/alarm.wav'),
+  beep: require('../../assets/sounds/beep.ogg'),
+  beepUrgent: require('../../assets/sounds/beep_urgent.ogg'),
+  alarm: require('../../assets/sounds/alarm.ogg'),
 };
 
 type LoadedSounds = {

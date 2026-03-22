@@ -7,14 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "cover",
       "backgroundColor": "#0D0D0F"
-    },
-    "ios": {
-      "bundleIdentifier": "com.goclock.app",
-      "supportsTablet": true,
-      "buildNumber": "1"
     },
     "android": {
       "package": "com.goclock.app",
@@ -27,16 +20,11 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0D0D0F",
-          "image": "./assets/splash-icon.png",
-          "resizeMode": "COVER"
+          "backgroundColor": "#0D0D0F"
         }
       ]
     ],
