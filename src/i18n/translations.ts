@@ -70,6 +70,12 @@ export interface Translations {
   suddenDeath: string;
   moveCount: (n: number) => string;
 
+  // Setup — disposition & affichage
+  orientation: string;
+  displayStyleLabel: string;
+  displayLed: string;
+  displayApp: string;
+
   // Preset names
   presetNames: {
     blitz: string;
@@ -134,6 +140,11 @@ const fr: Translations = {
   firstPlayer: 'Commence',
   blackFirst: 'Noir',
   whiteFirst: 'Blanc',
+
+  orientation: 'Disposition',
+  displayStyleLabel: 'Affichage',
+  displayLed: 'Classique',
+  displayApp: 'Style app',
 
   black: 'Noir',
   white: 'Blanc',
@@ -210,6 +221,11 @@ const en: Translations = {
   blackFirst: 'Black',
   whiteFirst: 'White',
 
+  orientation: 'Layout',
+  displayStyleLabel: 'Display',
+  displayLed: 'Classic',
+  displayApp: 'App Style',
+
   black: 'Black',
   white: 'White',
   wins: 'Wins!',
@@ -284,6 +300,11 @@ const ko: Translations = {
   firstPlayer: '선수',
   blackFirst: '흑',
   whiteFirst: '백',
+
+  orientation: '배치',
+  displayStyleLabel: '화면 스타일',
+  displayLed: '클래식',
+  displayApp: '앱 스타일',
 
   black: '흑',
   white: '백',
@@ -360,6 +381,11 @@ const ja: Translations = {
   blackFirst: '黒',
   whiteFirst: '白',
 
+  orientation: '配置',
+  displayStyleLabel: '表示スタイル',
+  displayLed: 'クラシック',
+  displayApp: 'アプリスタイル',
+
   black: '黒',
   white: '白',
   wins: '勝ち！',
@@ -434,6 +460,11 @@ const zh: Translations = {
   firstPlayer: '先手',
   blackFirst: '黑',
   whiteFirst: '白',
+
+  orientation: '位置',
+  displayStyleLabel: '显示风格',
+  displayLed: '经典',
+  displayApp: '应用风格',
 
   black: '黑',
   white: '白',

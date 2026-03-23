@@ -19,6 +19,8 @@ import {
   AbsoluteConfig,
   Preset,
   Player,
+  BlackSide,
+  DisplayStyle,
 } from '../types';
 import { Translations } from '../i18n/translations';
 
@@ -42,7 +44,7 @@ import { Language, LANGUAGE_LABELS } from '../i18n/translations';
 const STORAGE_KEY = '@go_clock_last_config';
 
 interface Props {
-  onStart: (config: TimeControlConfig, firstPlayer: Player) => void;
+  onStart: (config: TimeControlConfig, firstPlayer: Player, blackSide: BlackSide, displayStyle: DisplayStyle) => void;
 }
 
 // ── Sélecteur de langue ───────────────────────────────────────────────────────
@@ -111,6 +113,8 @@ export default function SetupScreen({ onStart }: Props) {
   const [showChevron, setShowChevron] = useState(true);
   const presetContainerWidth = useRef(0);
   const [firstPlayer, setFirstPlayer] = useState<Player>('black');
+  const [blackSide, setBlackSide] = useState<BlackSide>('left');
+  const [displayStyle, setDisplayStyle] = useState<DisplayStyle>('led');
 
   // Byoyomi
   const [byoMainMins, setByoMainMins] = useState(10);
@@ -146,13 +150,15 @@ export default function SetupScreen({ onStart }: Props) {
         if (saved.fisMainMins != null) setFisMainMins(saved.fisMainMins);
         if (saved.fisIncSecs != null) setFisIncSecs(saved.fisIncSecs);
         if (saved.absMainMins != null) setAbsMainMins(saved.absMainMins);
+        if (saved.blackSide) setBlackSide(saved.blackSide);
+        if (saved.displayStyle) setDisplayStyle(saved.displayStyle);
       } catch {}
     });
   }, []);
 
   const saveConfig = (overrides: Record<string, unknown> = {}) => {
     const snapshot = {
-      activeTab, firstPlayer,
+      activeTab, firstPlayer, blackSide, displayStyle,
       byoMainMins, byoPeriods, byoPeriodSecs,
       canMainMins, canMoves, canPeriodMins,
       fisMainMins, fisIncSecs,
@@ -418,12 +424,58 @@ export default function SetupScreen({ onStart }: Props) {
           </View>
         </View>
 
+        {/* Disposition — bouton compact aligné sur la ligne "Commence" */}
+        <View style={s.firstPlayerRow}>
+          <Text style={s.firstPlayerLabel}>{t.orientation}</Text>
+          <TouchableOpacity
+            style={s.sideToggle}
+            onPress={() => setBlackSide((bs) => (bs === 'left' ? 'right' : 'left'))}
+            activeOpacity={0.85}
+          >
+            <View style={[s.sideHalf, blackSide === 'left' ? s.sideHalfBlack : s.sideHalfWhite]}>
+              <Text style={blackSide === 'left' ? s.sideHalfLabelLight : s.sideHalfLabelDark}>
+                {blackSide === 'left' ? '⬤' : '○'}
+              </Text>
+            </View>
+            <View style={[s.sideHalf, blackSide === 'left' ? s.sideHalfWhite : s.sideHalfBlack]}>
+              <Text style={blackSide === 'left' ? s.sideHalfLabelDark : s.sideHalfLabelLight}>
+                {blackSide === 'left' ? '○' : '⬤'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Style d'affichage */}
+        <Text style={s.sectionTitle}>{t.displayStyleLabel}</Text>
+        <View style={s.displayStyleRow}>
+          <TouchableOpacity
+            style={[s.displayCard, displayStyle === 'led' && s.displayCardActive]}
+            onPress={() => setDisplayStyle('led')}
+            activeOpacity={0.8}
+          >
+            <Text style={s.displayCardLabel}>{t.displayLed}</Text>
+            <View style={s.displayCardLedPreview}>
+              <Text style={s.displayCardLedTime}>10:00</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.displayCard, displayStyle === 'app' && s.displayCardActive]}
+            onPress={() => setDisplayStyle('app')}
+            activeOpacity={0.8}
+          >
+            <Text style={s.displayCardLabel}>{t.displayApp}</Text>
+            <View style={s.displayCardAppPreview}>
+              <Text style={s.displayCardAppTime}>10:00</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
         <View style={s.bottomPadding} />
       </ScrollView>
 
       {/* Bouton sticky */}
       <View style={s.stickyFooter}>
-        <TouchableOpacity style={s.startBtn} onPress={() => { saveConfig(); onStart(buildConfig(), firstPlayer); }}>
+        <TouchableOpacity style={s.startBtn} onPress={() => { saveConfig(); onStart(buildConfig(), firstPlayer, blackSide, displayStyle); }}>
           <Text style={s.startBtnText}>{t.startGame}</Text>
         </TouchableOpacity>
       </View>
@@ -572,5 +624,81 @@ const s = StyleSheet.create({
     paddingVertical: 18, alignItems: 'center',
   },
   startBtnText: { color: '#000', fontSize: 18, fontWeight: '700' },
+  // ── Disposition ─────────────────────────────────────────────────────────────
+  sideToggle: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    width: 52,
+    height: 64,
+    borderWidth: 1.5,
+    borderColor: '#3C3C3E',
+  },
+  sideHalf: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sideHalfBlack: { backgroundColor: '#1A1A1A' },
+  sideHalfWhite: { backgroundColor: '#E8E8E0' },
+  sideHalfLabelLight: { fontSize: 16, color: '#CCC' },
+  sideHalfLabelDark: { fontSize: 16, color: '#444' },
+
+  // ── Style d'affichage ────────────────────────────────────────────────────────
+  displayStyleRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  displayCard: {
+    flex: 1,
+    backgroundColor: '#1C1C1E',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  displayCardActive: {
+    borderColor: '#F5A623',
+    backgroundColor: '#1E1800',
+  },
+  displayCardLabel: {
+    color: '#666',
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  displayCardLedPreview: {
+    height: 36,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#CCD0B8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  displayCardLedTime: {
+    fontFamily: 'DSEG7Classic-Bold',
+    fontSize: 22,
+    color: '#1A1A0A',
+  },
+  displayCardAppPreview: {
+    height: 36,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#F0F0EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  displayCardAppTime: {
+    fontFamily: 'DSEG7Classic-Bold',
+    fontSize: 22,
+    color: '#1A1A0A',
+  },
+
   bottomPadding: { height: 16 },
 });

@@ -57,6 +57,9 @@ export interface GameState {
   winner: Player | null;
 }
 
+export type DisplayStyle = 'led' | 'app';
+export type BlackSide = 'left' | 'right';
+
 export type PresetNameKey = 'blitz' | 'online' | 'club' | 'egf' | 'long' | 'rapid' | 'standard';
 
 export interface Preset {
