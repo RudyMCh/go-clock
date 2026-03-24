@@ -282,7 +282,9 @@ export default function GameScreen({ config, firstPlayer, blackSide, displayStyl
 
   const [colonVisible, setColonVisible] = useState(true);
   useEffect(() => {
-    const id = setInterval(() => setColonVisible(v => !v), 500);
+    const id = setInterval(() => {
+      if (gameStateRef.current?.status === 'running') setColonVisible(v => !v);
+    }, 500);
     return () => clearInterval(id);
   }, []);
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Go Clock",
     "slug": "go-clock",
-    "version":"1.5.0",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -20,7 +20,9 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": [],
+    "plugins": [
+      "expo-font"
+    ],
     "extra": {
       "eas": {
         "projectId": "7530ea81-1550-453f-b835-e000a529e926"
