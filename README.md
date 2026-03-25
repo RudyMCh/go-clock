@@ -1,8 +1,10 @@
 # Go Clock
 
-A mobile chess clock designed for Go, built with React Native and Expo.
+A mobile Go clock for two players, built with React Native and Expo.
 
-![icon](assets/icon.png)
+<div align="center">
+  <img src="assets/android-icon-foreground.png" width="360" alt="Go Clock App" />
+</div>
 
 ## Features
 
@@ -14,6 +16,8 @@ A mobile chess clock designed for Go, built with React Native and Expo.
 - **Sound alerts** — beeps on the last 10 seconds of a critical period, urgent beeps on the last 5
 - **Move counter** — tracks each player's move count throughout the game
 - **Configurable first player** — toggle between Black and White for handicap games
+- **Configurable board side** — choose which physical side of the device Black plays on (left or right)
+- **Two display styles** — LED (7-segment DSEG7 font) or standard app style, selectable in setup
 - **Persistent settings** — last configuration is restored when you return to setup
 - **Screen stays on** — display never sleeps during a game
 - **Five languages** — French, English, Korean, Japanese, Chinese
@@ -54,43 +58,3 @@ Requires the [Expo Go](https://expo.dev/go) app on your device, or a configured 
 4. Tap the full-screen overlay to begin — each subsequent tap ends your move and starts the opponent's clock
 5. Tap the **opponent's half** to pause; tap anywhere to resume
 6. Use the center bar to pause ⏸, reset ↺, or go back ←
-
-## Build & publish (Android)
-
-### First time
-
-```bash
-npm install -g eas-cli
-eas login    # create an Expo account if needed
-eas init     # links the project to your Expo account
-```
-
-### Test build (APK, install directly on device)
-
-```bash
-eas build --platform android --profile preview
-```
-
-### Production build (AAB for Play Store)
-
-```bash
-eas build --platform android --profile production
-```
-
-Builds run on Expo servers (~10–15 min). The `autoIncrement` option in `eas.json` bumps `versionCode` automatically.
-
-### Submit to Play Console
-
-Place your Google service account JSON at the root as `google-service-account.json` (already in `.gitignore`), then:
-
-```bash
-eas submit --platform android --profile production
-```
-
-### EAS profiles
-
-| Profile | Usage |
-|---------|-------|
-| `development` | Dev client with hot reload |
-| `preview` | APK for direct install and testing |
-| `production` | Signed AAB for the Play Store, auto-increments versionCode |
