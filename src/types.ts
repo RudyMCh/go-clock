@@ -60,6 +60,25 @@ export interface GameState {
 export type DisplayStyle = 'led' | 'app';
 export type BlackSide = 'left' | 'right';
 
+export interface ResumePlayerState {
+  inOvertime: boolean;
+  mainTimeMins: number;
+  mainTimeSecs: number;
+  // byoyomi overtime
+  periodsLeft: number;
+  byoyomiSecs: number;
+  // canadian overtime
+  canadianMins: number;
+  canadianSecs: number;
+  movesPlayed: number;
+}
+
+export interface ResumeConfig {
+  enabled: boolean;
+  black: ResumePlayerState;
+  white: ResumePlayerState;
+}
+
 export type PresetNameKey = 'blitz' | 'online' | 'club' | 'egf' | 'long' | 'rapid' | 'standard';
 
 export interface Preset {

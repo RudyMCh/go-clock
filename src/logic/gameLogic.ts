@@ -6,6 +6,8 @@ import {
   ByoyomiConfig,
   CanadianConfig,
   FischerConfig,
+  ResumeConfig,
+  ResumePlayerState,
 } from '../types';
 
 export function createInitialPlayerState(config: TimeControlConfig): PlayerState {
@@ -21,11 +23,28 @@ export function createInitialPlayerState(config: TimeControlConfig): PlayerState
   };
 }
 
-export function createGameState(config: TimeControlConfig, firstPlayer: Player = 'black'): GameState {
+function createResumedPlayerState(config: TimeControlConfig, r: ResumePlayerState): PlayerState {
+  const base = createInitialPlayerState(config);
+  if (!r.inOvertime) {
+    return { ...base, mainTimeLeft: r.mainTimeMins * 60 + r.mainTimeSecs };
+  }
+  if (config.type === 'byoyomi') {
+    return { ...base, mainTimeLeft: 0, inOvertime: true, periodsLeft: r.periodsLeft, byoyomiTimeLeft: r.byoyomiSecs };
+  }
+  if (config.type === 'canadian') {
+    const movesLeft = Math.max(1, (config as CanadianConfig).movesPerPeriod - r.movesPlayed);
+    return { ...base, mainTimeLeft: 0, inOvertime: true, canadianTimeLeft: r.canadianMins * 60 + r.canadianSecs, movesLeftInPeriod: movesLeft };
+  }
+  return { ...base, mainTimeLeft: 0 };
+}
+
+export function createGameState(config: TimeControlConfig, firstPlayer: Player = 'black', resume?: ResumeConfig): GameState {
+  const black = resume?.enabled ? createResumedPlayerState(config, resume.black) : createInitialPlayerState(config);
+  const white = resume?.enabled ? createResumedPlayerState(config, resume.white) : createInitialPlayerState(config);
   return {
     config,
-    black: createInitialPlayerState(config),
-    white: createInitialPlayerState(config),
+    black,
+    white,
     activePlayer: firstPlayer,
     firstPlayer,
     status: 'idle',
@@ -186,24 +205,29 @@ export function resumeGame(state: GameState): GameState {
   return { ...state, status: 'running' };
 }
 
-/** Formate un nombre de secondes en chaîne affichable */
-export function formatTime(seconds: number, showTenths = false): string {
+/** Retourne { main, sub } pour l'affichage pendule style horloge physique.
+ *  Ex: 1h30min22s → main="1:30" sub="22"
+ *  En surtemps byoyomi (<60s, tenths) → main="22" sub=".3"
+ */
+export function splitTime(seconds: number, showTenths = false): { main: string; sub: string } {
   const s = Math.max(0, seconds);
-  const mins = Math.floor(s / 60);
-  const secs = Math.floor(s % 60);
 
-  if (showTenths && mins === 0) {
+  if (showTenths && s < 60) {
+    const secs = Math.floor(s);
     const tenths = Math.floor((s % 1) * 10);
-    return `${secs}.${tenths}`;
+    return { main: secs.toString(), sub: `.${tenths}` };
   }
 
-  if (mins >= 60) {
-    const hours = Math.floor(mins / 60);
-    const remainingMins = mins % 60;
-    return `${hours}h${remainingMins.toString().padStart(2, '0')}`;
-  }
+  const totalSecs = Math.floor(s);
+  const secsDisplay = totalSecs % 60;
+  const totalMins = Math.floor(totalSecs / 60);
+  const mins = totalMins % 60;
+  const hours = Math.floor(totalMins / 60);
 
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+  return {
+    main: `${hours}:${mins.toString().padStart(2, '0')}`,
+    sub: secsDisplay.toString().padStart(2, '0'),
+  };
 }
 
 /** Renvoie vrai si le temps est critique (pour alerter le joueur) */

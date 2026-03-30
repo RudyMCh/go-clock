@@ -13,34 +13,35 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { GameState, TimeControlConfig, Player, PlayerState, BlackSide, DisplayStyle } from '../types';
+import { GameState, TimeControlConfig, Player, PlayerState, BlackSide, DisplayStyle, ResumeConfig } from '../types';
 import { useSoundAlerts } from '../hooks/useSoundAlerts';
 import { useTranslation } from '../i18n/LanguageContext';
 import {
-  createGameState, tick, pressClock, pauseGame, resumeGame, formatTime, isTimeCritical,
+  createGameState, tick, pressClock, pauseGame, resumeGame, splitTime, isTimeCritical,
 } from '../logic/gameLogic';
 
 // ── Affichage 7 segments ───────────────────────────────────────────────────────
 
 function SevenSegmentDisplay({
-  time, colonVisible, isActive, isCritical, displayStyle, isBlackZone,
+  main, sub, colonVisible, isActive, isCritical, displayStyle, isBlackZone,
 }: {
-  time: string; colonVisible: boolean; isActive: boolean;
+  main: string; sub: string; colonVisible: boolean; isActive: boolean;
   isCritical: boolean; displayStyle: DisplayStyle; isBlackZone: boolean;
 }) {
-  // Les ':' ne clignotent que pour le joueur actif
-  const displayStr = time.replace(':', (isActive && !colonVisible) ? ' ' : ':');
+  // Le ':' ne clignote que pour le joueur actif
+  const displayMain = main.replace(':', (isActive && !colonVisible) ? ' ' : ':');
 
-  if (displayStyle === 'led') {
-    const color = isCritical ? '#CC0000' : isActive ? '#0A0A0A' : 'rgba(10,10,10,0.25)';
-    return <Text style={[seg.time, { color }]}>{displayStr}</Text>;
-  }
+  const color = displayStyle === 'led'
+    ? (isCritical ? '#CC0000' : isActive ? '#0A0A0A' : 'rgba(10,10,10,0.25)')
+    : (isCritical ? '#E53935' : isBlackZone ? '#FFFFFF' : '#1A1A1E');
+  const opacity = displayStyle === 'led' ? 1 : (isActive ? 1 : 0.45);
 
-  // Mode app — même police, couleurs noir/blanc selon zone
-  const color = isCritical
-    ? '#E53935'
-    : isBlackZone ? '#FFFFFF' : '#1A1A1E';
-  return <Text style={[seg.time, { color, opacity: isActive ? 1 : 0.45 }]}>{displayStr}</Text>;
+  return (
+    <View style={seg.row}>
+      <Text style={[seg.time, { color, opacity }]}>{displayMain}</Text>
+      {sub ? <Text style={[seg.sub, { color, opacity }]}>{sub}</Text> : null}
+    </View>
+  );
 }
 
 // ── Infos surtemps ────────────────────────────────────────────────────────────
@@ -130,10 +131,10 @@ function PlayerZone({
 
   const displayTime = () => {
     if (playerState.inOvertime) {
-      if (config.type === 'byoyomi') return formatTime(playerState.byoyomiTimeLeft, true);
-      if (config.type === 'canadian') return formatTime(playerState.canadianTimeLeft, false);
+      if (config.type === 'byoyomi') return splitTime(playerState.byoyomiTimeLeft, true);
+      if (config.type === 'canadian') return splitTime(playerState.canadianTimeLeft, false);
     }
-    return formatTime(playerState.mainTimeLeft, playerState.mainTimeLeft < 60);
+    return splitTime(playerState.mainTimeLeft, false);
   };
 
   return (
@@ -171,14 +172,16 @@ function PlayerZone({
 
       {/* Zone centrale : temps + infos surtemps */}
       <View style={pz.inner}>
-        <SevenSegmentDisplay
-          time={displayTime()}
-          colonVisible={colonVisible}
-          isActive={isActive}
-          isCritical={isCritical}
-          displayStyle={displayStyle}
-          isBlackZone={isBlack}
-        />
+        {(() => { const { main, sub } = displayTime(); return (
+          <SevenSegmentDisplay
+            main={main} sub={sub}
+            colonVisible={colonVisible}
+            isActive={isActive}
+            isCritical={isCritical}
+            displayStyle={displayStyle}
+            isBlackZone={isBlack}
+          />
+        ); })()}
         <OvertimeInfo
           playerState={playerState}
           config={config}
@@ -200,10 +203,18 @@ function PlayerZone({
 }
 
 const seg = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'flex-end' },
   time: {
     fontFamily: 'DSEG7Classic-Bold',
     fontSize: 76,
     letterSpacing: 3,
+  },
+  sub: {
+    fontFamily: 'DSEG7Classic-Bold',
+    fontSize: 42,
+    letterSpacing: 2,
+    marginBottom: 4,
+    marginLeft: 6,
   },
 });
 
@@ -254,10 +265,11 @@ interface Props {
   firstPlayer: Player;
   blackSide: BlackSide;
   displayStyle: DisplayStyle;
+  resume?: ResumeConfig;
   onBack: () => void;
 }
 
-export default function GameScreen({ config, firstPlayer, blackSide, displayStyle, onBack }: Props) {
+export default function GameScreen({ config, firstPlayer, blackSide, displayStyle, resume, onBack }: Props) {
   useKeepAwake();
 
   useEffect(() => {
@@ -272,7 +284,7 @@ export default function GameScreen({ config, firstPlayer, blackSide, displayStyl
     return () => { NavigationBar.setVisibilityAsync('visible'); };
   }, []);
 
-  const [gameState, setGameState] = useState<GameState>(() => createGameState(config, firstPlayer));
+  const [gameState, setGameState] = useState<GameState>(() => createGameState(config, firstPlayer, resume));
   const { t } = useTranslation();
   const gameStateRef = useRef<GameState>(gameState);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -335,48 +347,35 @@ export default function GameScreen({ config, firstPlayer, blackSide, displayStyl
 
   useEffect(() => { return () => stopInterval(); }, []);
 
+  const setGame = useCallback((next: GameState) => {
+    gameStateRef.current = next;
+    setGameState(next);
+  }, []);
+
   const handlePlayerPress = useCallback((player: Player) => {
     const current = gameStateRef.current;
     if (current.status === 'finished') return;
     if (current.status === 'paused') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      const next = resumeGame(current);
-      gameStateRef.current = next; setGameState(next); return;
+      setGame(resumeGame(current)); return;
     }
     if (current.status === 'running' && current.activePlayer !== player) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      const next = pauseGame(current);
-      gameStateRef.current = next; setGameState(next); return;
+      setGame(pauseGame(current)); return;
     }
     if (current.status === 'idle' && player !== current.firstPlayer) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const next = pressClock(current);
-    gameStateRef.current = next; setGameState(next);
+    setGame(next);
     if (next.status === 'running') startInterval();
-  }, [startInterval]);
+  }, [setGame, startInterval]);
 
   const handlePauseResume = useCallback(() => {
     const current = gameStateRef.current;
     if (current.status === 'finished' || current.status === 'idle') return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const next = current.status === 'running' ? pauseGame(current) : resumeGame(current);
-    gameStateRef.current = next; setGameState(next);
-  }, []);
-
-  const handleReset = useCallback(() => {
-    Alert.alert(t.resetTitle, t.resetMessage, [
-      { text: t.cancel, style: 'cancel' },
-      {
-        text: t.restart, style: 'destructive',
-        onPress: () => {
-          stopInterval();
-          lastHapticSecond.current = -1;
-          const fresh = createGameState(config, firstPlayer);
-          gameStateRef.current = fresh; setGameState(fresh);
-        },
-      },
-    ]);
-  }, [config, stopInterval, t]);
+    setGame(current.status === 'running' ? pauseGame(current) : resumeGame(current));
+  }, [setGame]);
 
   const handleBack = useCallback(() => {
     Alert.alert(t.quitTitle, t.quitMessage, [
@@ -402,12 +401,6 @@ export default function GameScreen({ config, firstPlayer, blackSide, displayStyl
   const isPauseEnabled = status === 'running' || status === 'paused';
   const ctrlBg = displayStyle === 'led' ? '#9A9E8A' : '#1C1C1E';
 
-  const statusLabel = () => {
-    if (status === 'paused') return t.paused;
-    if (status === 'finished') return gameState.winner === 'black' ? t.blackWins : t.whiteWins;
-    return '';
-  };
-
   return (
     <View style={styles.root}>
       <StatusBar hidden />
@@ -421,20 +414,14 @@ export default function GameScreen({ config, firstPlayer, blackSide, displayStyl
       />
 
       <View style={[styles.controlBar, { backgroundColor: ctrlBg }]}>
-        <TouchableOpacity style={styles.controlBtn} onPress={handleBack}>
-          <Text style={styles.controlBtnText}>←</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+          <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.controlBtn, !isPauseEnabled && styles.controlBtnDisabled]}
+          style={[styles.pauseBtn, !isPauseEnabled && styles.controlBtnDisabled]}
           onPress={handlePauseResume} disabled={!isPauseEnabled}
         >
-          <Text style={styles.controlBtnText}>{status === 'paused' ? '▶' : '⏸'}</Text>
-        </TouchableOpacity>
-        {status !== 'idle' && (
-          <Text style={styles.statusText} numberOfLines={3}>{statusLabel()}</Text>
-        )}
-        <TouchableOpacity style={styles.controlBtn} onPress={handleReset}>
-          <Text style={styles.controlBtnText}>↺</Text>
+          <Text style={styles.pauseBtnText}>{status === 'paused' ? '▶' : '⏸'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -458,24 +445,26 @@ export default function GameScreen({ config, firstPlayer, blackSide, displayStyl
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000', flexDirection: 'row' },
   controlBar: {
-    width: 52,
+    width: 72,
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 12,
+    justifyContent: 'flex-start',
+    paddingTop: 8,
     borderLeftWidth: StyleSheet.hairlineWidth,
     borderRightWidth: StyleSheet.hairlineWidth,
     borderColor: '#444',
   },
-  statusText: { color: '#FFF', fontSize: 8, textAlign: 'center', paddingHorizontal: 2, opacity: 0.7 },
-  controlBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+  backBtn: {
+    width: 72, height: 52,
     justifyContent: 'center', alignItems: 'center',
   },
-  controlBtnDisabled: { opacity: 0.3 },
-  controlBtnText: { color: '#FFF', fontSize: 15 },
+  backBtnText: { color: 'rgba(255,255,255,0.6)', fontSize: 20 },
+  pauseBtn: {
+    flex: 1, width: '100%',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  pauseBtnText: { color: '#FFF', fontSize: 38 },
+  controlBtnDisabled: { opacity: 0.25 },
   startOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.88)',

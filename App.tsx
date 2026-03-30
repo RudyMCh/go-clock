@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
-import { TimeControlConfig, Player, BlackSide, DisplayStyle } from './src/types';
+import { TimeControlConfig, Player, BlackSide, DisplayStyle, ResumeConfig } from './src/types';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LanguageProvider } from './src/i18n/LanguageContext';
 import SetupScreen from './src/screens/SetupScreen';
@@ -15,6 +15,7 @@ function AppContent() {
   const [firstPlayer, setFirstPlayer] = useState<Player>('black');
   const [blackSide, setBlackSide] = useState<BlackSide>('left');
   const [displayStyle, setDisplayStyle] = useState<DisplayStyle>('led');
+  const [resume, setResume] = useState<ResumeConfig | undefined>(undefined);
 
   if (screen === 'game' && config) {
     return (
@@ -23,6 +24,7 @@ function AppContent() {
         firstPlayer={firstPlayer}
         blackSide={blackSide}
         displayStyle={displayStyle}
+        resume={resume}
         onBack={() => setScreen('setup')}
       />
     );
@@ -30,11 +32,12 @@ function AppContent() {
 
   return (
     <SetupScreen
-      onStart={(cfg, fp, bs, ds) => {
+      onStart={(cfg, fp, bs, ds, res) => {
         setConfig(cfg);
         setFirstPlayer(fp);
         setBlackSide(bs);
         setDisplayStyle(ds);
+        setResume(res.enabled ? res : undefined);
         setScreen('game');
       }}
     />

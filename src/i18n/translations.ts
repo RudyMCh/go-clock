@@ -76,6 +76,19 @@ export interface Translations {
   displayLed: string;
   displayApp: string;
 
+  // Resume mode
+  resumeMode: string;
+  resumeActive: string;
+  resumeInactive: string;
+  mainTimePhase: string;
+  overtimePhase: string;
+  timeRemaining: string;
+  mainTimeExhausted: string;
+  periodsRemaining: string;
+  byoyomiTimeLeft: string;
+  periodTimeLeft: string;
+  movesPlayed: string;
+
   // Preset names
   presetNames: {
     blitz: string;
@@ -145,6 +158,18 @@ const fr: Translations = {
   displayStyleLabel: 'Affichage',
   displayLed: 'Classique',
   displayApp: 'Style app',
+
+  resumeMode: 'Mode reprise',
+  resumeActive: 'Activé',
+  resumeInactive: 'Désactivé',
+  mainTimePhase: 'Temps principal',
+  overtimePhase: 'Surtemps',
+  timeRemaining: 'Temps restant',
+  mainTimeExhausted: 'Épuisé',
+  periodsRemaining: 'Périodes restantes',
+  byoyomiTimeLeft: 'Temps byoyomi',
+  periodTimeLeft: 'Temps de période',
+  movesPlayed: 'Coups joués',
 
   black: 'Noir',
   white: 'Blanc',
@@ -226,6 +251,18 @@ const en: Translations = {
   displayLed: 'Classic',
   displayApp: 'App Style',
 
+  resumeMode: 'Resume mode',
+  resumeActive: 'Active',
+  resumeInactive: 'Inactive',
+  mainTimePhase: 'Main time',
+  overtimePhase: 'Overtime',
+  timeRemaining: 'Time remaining',
+  mainTimeExhausted: 'Exhausted',
+  periodsRemaining: 'Periods remaining',
+  byoyomiTimeLeft: 'Byoyomi time',
+  periodTimeLeft: 'Period time',
+  movesPlayed: 'Moves played',
+
   black: 'Black',
   white: 'White',
   wins: 'Wins!',
@@ -305,6 +342,18 @@ const ko: Translations = {
   displayStyleLabel: '화면 스타일',
   displayLed: '클래식',
   displayApp: '앱 스타일',
+
+  resumeMode: '복기 모드',
+  resumeActive: '활성',
+  resumeInactive: '비활성',
+  mainTimePhase: '주 시간',
+  overtimePhase: '초읽기',
+  timeRemaining: '남은 시간',
+  mainTimeExhausted: '소진됨',
+  periodsRemaining: '남은 회수',
+  byoyomiTimeLeft: '초읽기 시간',
+  periodTimeLeft: '기간 시간',
+  movesPlayed: '진행한 수',
 
   black: '흑',
   white: '백',
@@ -386,6 +435,18 @@ const ja: Translations = {
   displayLed: 'クラシック',
   displayApp: 'アプリスタイル',
 
+  resumeMode: '再開モード',
+  resumeActive: '有効',
+  resumeInactive: '無効',
+  mainTimePhase: '持ち時間',
+  overtimePhase: '延長',
+  timeRemaining: '残り時間',
+  mainTimeExhausted: '切れ',
+  periodsRemaining: '残り秒読み回数',
+  byoyomiTimeLeft: '秒読み時間',
+  periodTimeLeft: '期間の残り時間',
+  movesPlayed: '着手数',
+
   black: '黒',
   white: '白',
   wins: '勝ち！',
@@ -465,6 +526,18 @@ const zh: Translations = {
   displayStyleLabel: '显示风格',
   displayLed: '经典',
   displayApp: '应用风格',
+
+  resumeMode: '恢复模式',
+  resumeActive: '启用',
+  resumeInactive: '禁用',
+  mainTimePhase: '主时间',
+  overtimePhase: '延长',
+  timeRemaining: '剩余时间',
+  mainTimeExhausted: '耗尽',
+  periodsRemaining: '剩余次数',
+  byoyomiTimeLeft: '读秒时间',
+  periodTimeLeft: '阶段时间',
+  movesPlayed: '已走手数',
 
   black: '黑',
   white: '白',

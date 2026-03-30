@@ -21,8 +21,12 @@ import {
   Player,
   BlackSide,
   DisplayStyle,
+  ResumeConfig,
+  ResumePlayerState,
 } from '../types';
-import { Translations } from '../i18n/translations';
+import { Translations, Language, LANGUAGE_LABELS } from '../i18n/translations';
+import { PRESETS } from '../logic/presets';
+import { useTranslation } from '../i18n/LanguageContext';
 
 function formatPresetDesc(config: TimeControlConfig, t: Translations): string {
   const mins = Math.floor(config.mainTime / 60);
@@ -37,14 +41,11 @@ function formatPresetDesc(config: TimeControlConfig, t: Translations): string {
       return `${mins} ${t.unitMin}`;
   }
 }
-import { PRESETS } from '../logic/presets';
-import { useTranslation } from '../i18n/LanguageContext';
-import { Language, LANGUAGE_LABELS } from '../i18n/translations';
 
 const STORAGE_KEY = '@go_clock_last_config';
 
 interface Props {
-  onStart: (config: TimeControlConfig, firstPlayer: Player, blackSide: BlackSide, displayStyle: DisplayStyle) => void;
+  onStart: (config: TimeControlConfig, firstPlayer: Player, blackSide: BlackSide, displayStyle: DisplayStyle, resume: ResumeConfig) => void;
 }
 
 // ── Sélecteur de langue ───────────────────────────────────────────────────────
@@ -70,6 +71,33 @@ function LanguageSelector() {
   );
 }
 
+// ── Bouton répétitif (appui long) ─────────────────────────────────────────────
+
+function RepeatButton({ onAction, disabled, children }: {
+  onAction: () => void; disabled?: boolean; children: React.ReactNode;
+}) {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const actionRef = useRef(onAction);
+  actionRef.current = onAction;
+
+  const stop = () => {
+    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+  };
+
+  return (
+    <TouchableOpacity
+      style={[s.stepBtn, disabled && s.stepBtnDisabled]}
+      onPress={disabled ? undefined : onAction}
+      onLongPress={() => { intervalRef.current = setInterval(() => actionRef.current(), 80); }}
+      onPressOut={stop}
+      delayLongPress={350}
+      disabled={disabled}
+    >
+      <Text style={s.stepBtnText}>{children}</Text>
+    </TouchableOpacity>
+  );
+}
+
 // ── Contrôle +/- ─────────────────────────────────────────────────────────────
 
 interface StepperProps {
@@ -86,20 +114,146 @@ function Stepper({ label, value, unit, onIncrease, onDecrease, canDecrease }: St
     <View style={s.stepperRow}>
       <Text style={s.stepperLabel}>{label}</Text>
       <View style={s.stepperControls}>
-        <TouchableOpacity
-          style={[s.stepBtn, !canDecrease && s.stepBtnDisabled]}
-          onPress={onDecrease}
-          disabled={!canDecrease}
-        >
-          <Text style={s.stepBtnText}>−</Text>
-        </TouchableOpacity>
-        <Text style={s.stepperValue}>
-          {value} {unit}
-        </Text>
-        <TouchableOpacity style={s.stepBtn} onPress={onIncrease}>
-          <Text style={s.stepBtnText}>+</Text>
-        </TouchableOpacity>
+        <RepeatButton onAction={onDecrease} disabled={!canDecrease}>−</RepeatButton>
+        <Text style={s.stepperValue}>{value} {unit}</Text>
+        <RepeatButton onAction={onIncrease}>+</RepeatButton>
       </View>
+    </View>
+  );
+}
+
+// ── Bloc de reprise par joueur ────────────────────────────────────────────────
+
+interface ResumeBlockProps {
+  state: ResumePlayerState;
+  setState: (s: ResumePlayerState) => void;
+  activeTab: TimeControlType;
+  defaultMainMins: number;
+  maxPeriods: number;
+  maxByoyomiSecs: number;
+  maxMovesPerPeriod: number;
+  t: import('../i18n/translations').Translations;
+}
+
+function ResumePlayerBlock({ state, setState, activeTab, defaultMainMins, maxPeriods, maxByoyomiSecs, maxMovesPerPeriod, t }: ResumeBlockProps) {
+  const hasOvertime = activeTab === 'byoyomi' || activeTab === 'canadian';
+  const isExhausted = state.mainTimeMins === 0 && state.mainTimeSecs === 0;
+  const set = (patch: Partial<ResumePlayerState>) => setState({ ...state, ...patch });
+
+  return (
+    <View>
+      {hasOvertime && (
+        <View style={s.stepperRow}>
+          <Text style={s.stepperLabel}>{t.mainTimePhase} / {t.overtimePhase}</Text>
+          <View style={s.firstPlayerToggle}>
+            <TouchableOpacity
+              style={[s.firstPlayerBtn, !state.inOvertime && s.firstPlayerBtnActive]}
+              onPress={() => set({ inOvertime: false })}
+            >
+              <Text style={[s.firstPlayerBtnText, !state.inOvertime && s.firstPlayerBtnTextActive]}>
+                {t.mainTimePhase}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.firstPlayerBtn, state.inOvertime && s.firstPlayerBtnActive]}
+              onPress={() => set({ inOvertime: true, mainTimeMins: 0, mainTimeSecs: 0 })}
+            >
+              <Text style={[s.firstPlayerBtnText, state.inOvertime && s.firstPlayerBtnTextActive]}>
+                {t.overtimePhase}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {!state.inOvertime && (
+        <>
+          <View style={s.stepperRow}>
+            <Text style={s.stepperLabel}>{t.timeRemaining}</Text>
+            <TouchableOpacity
+              style={[s.exhaustedBtn, isExhausted && s.exhaustedBtnActive]}
+              onPress={() => isExhausted
+                ? set({ mainTimeMins: defaultMainMins, mainTimeSecs: 0 })
+                : set({ mainTimeMins: 0, mainTimeSecs: 0 })
+              }
+            >
+              <Text style={[s.exhaustedBtnText, isExhausted && s.exhaustedBtnTextActive]}>
+                {t.mainTimeExhausted}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {!isExhausted && (
+            <>
+              <Stepper
+                label=""
+                value={state.mainTimeMins}
+                unit={t.unitMin}
+                onIncrease={() => set({ mainTimeMins: state.mainTimeMins + 1 })}
+                onDecrease={() => set({ mainTimeMins: Math.max(0, state.mainTimeMins - 1) })}
+                canDecrease={state.mainTimeMins > 0}
+              />
+              <Stepper
+                label=""
+                value={state.mainTimeSecs}
+                unit={t.unitSec}
+                onIncrease={() => set({ mainTimeSecs: Math.min(59, state.mainTimeSecs + 1) })}
+                onDecrease={() => set({ mainTimeSecs: Math.max(0, state.mainTimeSecs - 1) })}
+                canDecrease={state.mainTimeSecs > 0}
+              />
+            </>
+          )}
+        </>
+      )}
+
+      {state.inOvertime && activeTab === 'byoyomi' && (
+        <>
+          <Stepper
+            label={t.periodsRemaining}
+            value={state.periodsLeft}
+            unit={t.unitPeriods}
+            onIncrease={() => set({ periodsLeft: Math.min(maxPeriods, state.periodsLeft + 1) })}
+            onDecrease={() => set({ periodsLeft: Math.max(1, state.periodsLeft - 1) })}
+            canDecrease={state.periodsLeft > 1}
+          />
+          <Stepper
+            label={t.byoyomiTimeLeft}
+            value={state.byoyomiSecs}
+            unit={t.unitSec}
+            onIncrease={() => set({ byoyomiSecs: Math.min(maxByoyomiSecs, state.byoyomiSecs + 1) })}
+            onDecrease={() => set({ byoyomiSecs: Math.max(1, state.byoyomiSecs - 1) })}
+            canDecrease={state.byoyomiSecs > 1}
+          />
+        </>
+      )}
+
+      {state.inOvertime && activeTab === 'canadian' && (
+        <>
+          <Stepper
+            label={t.periodTimeLeft}
+            value={state.canadianMins}
+            unit={t.unitMin}
+            onIncrease={() => set({ canadianMins: state.canadianMins + 1 })}
+            onDecrease={() => set({ canadianMins: Math.max(0, state.canadianMins - 1) })}
+            canDecrease={state.canadianMins > 0}
+          />
+          <Stepper
+            label=""
+            value={state.canadianSecs}
+            unit={t.unitSec}
+            onIncrease={() => set({ canadianSecs: Math.min(59, state.canadianSecs + 1) })}
+            onDecrease={() => set({ canadianSecs: Math.max(0, state.canadianSecs - 1) })}
+            canDecrease={state.canadianSecs > 0}
+          />
+          <Stepper
+            label={t.movesPlayed}
+            value={state.movesPlayed}
+            unit={t.unitMoves}
+            onIncrease={() => set({ movesPlayed: Math.min(maxMovesPerPeriod - 1, state.movesPlayed + 1) })}
+            onDecrease={() => set({ movesPlayed: Math.max(0, state.movesPlayed - 1) })}
+            canDecrease={state.movesPlayed > 0}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -132,6 +286,43 @@ export default function SetupScreen({ onStart }: Props) {
 
   // Absolute
   const [absMainMins, setAbsMainMins] = useState(30);
+
+  // Resume mode
+  const [resumeEnabled, setResumeEnabled] = useState(false);
+
+  const buildResumeInit = (
+    tab: TimeControlType = activeTab,
+    mainMins = tab === 'byoyomi' ? byoMainMins : tab === 'canadian' ? canMainMins : tab === 'fischer' ? fisMainMins : absMainMins,
+    periods = byoPeriods,
+    periodSecs = byoPeriodSecs,
+    canMins = canPeriodMins,
+  ): ResumePlayerState => ({
+    inOvertime: false,
+    mainTimeMins: mainMins,
+    mainTimeSecs: 0,
+    periodsLeft: periods,
+    byoyomiSecs: periodSecs,
+    canadianMins: canMins,
+    canadianSecs: 0,
+    movesPlayed: 0,
+  });
+
+  const [resumeBlack, setResumeBlack] = useState<ResumePlayerState>(() => buildResumeInit());
+  const [resumeWhite, setResumeWhite] = useState<ResumePlayerState>(() => buildResumeInit());
+
+  const syncResume = (init: ResumePlayerState) => {
+    setResumeBlack(init);
+    setResumeWhite(init);
+  };
+
+  const enableResume = () => {
+    syncResume(buildResumeInit());
+    setResumeEnabled(true);
+  };
+
+  // Sync mode reprise quand on change d'onglet (si activé)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (resumeEnabled) syncResume(buildResumeInit(activeTab)); }, [activeTab]);
 
   // Restauration du dernier réglage
   useEffect(() => {
@@ -201,20 +392,21 @@ export default function SetupScreen({ onStart }: Props) {
   const applyPreset = (preset: Preset) => {
     const c = preset.config;
     setActiveTab(c.type);
+    let mainMins = 0, periods = byoPeriods, periodSecs = byoPeriodSecs, canMins = canPeriodMins;
     if (c.type === 'byoyomi') {
-      setByoMainMins(Math.floor(c.mainTime / 60));
-      setByoPeriods(c.periods);
-      setByoPeriodSecs(c.periodTime);
+      mainMins = Math.floor(c.mainTime / 60); periods = c.periods; periodSecs = c.periodTime;
+      setByoMainMins(mainMins); setByoPeriods(periods); setByoPeriodSecs(periodSecs);
     } else if (c.type === 'canadian') {
-      setCanMainMins(Math.floor(c.mainTime / 60));
-      setCanMoves(c.movesPerPeriod);
-      setCanPeriodMins(Math.floor(c.periodTime / 60));
+      mainMins = Math.floor(c.mainTime / 60); canMins = Math.floor(c.periodTime / 60);
+      setCanMainMins(mainMins); setCanMoves(c.movesPerPeriod); setCanPeriodMins(canMins);
     } else if (c.type === 'fischer') {
-      setFisMainMins(Math.floor(c.mainTime / 60));
-      setFisIncSecs(c.increment);
+      mainMins = Math.floor(c.mainTime / 60);
+      setFisMainMins(mainMins); setFisIncSecs(c.increment);
     } else if (c.type === 'absolute') {
-      setAbsMainMins(Math.floor(c.mainTime / 60));
+      mainMins = Math.floor(c.mainTime / 60);
+      setAbsMainMins(mainMins);
     }
+    if (resumeEnabled) syncResume(buildResumeInit(c.type, mainMins, periods, periodSecs, canMins));
   };
 
   useEffect(() => {
@@ -234,13 +426,8 @@ export default function SetupScreen({ onStart }: Props) {
     { key: 'absolute', label: t.absolute },
   ];
 
-  const getModeDesc = (): string => {
-    switch (activeTab) {
-      case 'byoyomi':  return t.byoyomiDesc;
-      case 'canadian': return t.canadianDesc;
-      case 'fischer':  return t.fischerDesc;
-      case 'absolute': return t.absoluteDesc;
-    }
+  const MODE_DESCS: Record<TimeControlType, string> = {
+    byoyomi: t.byoyomiDesc, canadian: t.canadianDesc, fischer: t.fischerDesc, absolute: t.absoluteDesc,
   };
 
   return (
@@ -270,7 +457,7 @@ export default function SetupScreen({ onStart }: Props) {
         </View>
 
         {/* Description */}
-        <Text style={s.modeDesc}>{getModeDesc()}</Text>
+        <Text style={s.modeDesc}>{MODE_DESCS[activeTab]}</Text>
 
         {/* Préréglages */}
         <Text style={s.sectionTitle}>{t.presets}</Text>
@@ -470,12 +657,67 @@ export default function SetupScreen({ onStart }: Props) {
           </TouchableOpacity>
         </View>
 
+        {/* Mode reprise */}
+        <Text style={s.sectionTitle}>{t.resumeMode}</Text>
+        <View style={s.resumeToggleRow}>
+          <TouchableOpacity
+            style={[s.resumeToggleBtn, !resumeEnabled && s.resumeToggleBtnActive]}
+            onPress={() => setResumeEnabled(false)}
+          >
+            <Text style={[s.resumeToggleBtnText, !resumeEnabled && s.resumeToggleBtnTextActive]}>
+              {t.resumeInactive}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.resumeToggleBtn, resumeEnabled && s.resumeToggleBtnActive]}
+            onPress={enableResume}
+          >
+            <Text style={[s.resumeToggleBtnText, resumeEnabled && s.resumeToggleBtnTextActive]}>
+              {t.resumeActive}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ opacity: resumeEnabled ? 1 : 0.35 }} pointerEvents={resumeEnabled ? 'auto' : 'none'}>
+          <View style={s.resumePlayerSection}>
+            <Text style={s.resumePlayerHeader}>⬤ {t.black}</Text>
+            <View style={s.configBlock}>
+              <ResumePlayerBlock
+                state={resumeBlack}
+                setState={setResumeBlack}
+                activeTab={activeTab}
+                defaultMainMins={activeTab === 'byoyomi' ? byoMainMins : activeTab === 'canadian' ? canMainMins : activeTab === 'fischer' ? fisMainMins : absMainMins}
+                maxPeriods={byoPeriods}
+                maxByoyomiSecs={byoPeriodSecs}
+                maxMovesPerPeriod={canMoves}
+                t={t}
+              />
+            </View>
+          </View>
+
+          <View style={s.resumePlayerSection}>
+            <Text style={s.resumePlayerHeader}>○ {t.white}</Text>
+            <View style={s.configBlock}>
+              <ResumePlayerBlock
+                state={resumeWhite}
+                setState={setResumeWhite}
+                activeTab={activeTab}
+                defaultMainMins={activeTab === 'byoyomi' ? byoMainMins : activeTab === 'canadian' ? canMainMins : activeTab === 'fischer' ? fisMainMins : absMainMins}
+                maxPeriods={byoPeriods}
+                maxByoyomiSecs={byoPeriodSecs}
+                maxMovesPerPeriod={canMoves}
+                t={t}
+              />
+            </View>
+          </View>
+        </View>
+
         <View style={s.bottomPadding} />
       </ScrollView>
 
       {/* Bouton sticky */}
       <View style={s.stickyFooter}>
-        <TouchableOpacity style={s.startBtn} onPress={() => { saveConfig(); onStart(buildConfig(), firstPlayer, blackSide, displayStyle); }}>
+        <TouchableOpacity style={s.startBtn} onPress={() => { saveConfig(); onStart(buildConfig(), firstPlayer, blackSide, displayStyle, { enabled: resumeEnabled, black: resumeBlack, white: resumeWhite }); }}>
           <Text style={s.startBtnText}>{t.startGame}</Text>
         </TouchableOpacity>
       </View>
@@ -701,4 +943,43 @@ const s = StyleSheet.create({
   },
 
   bottomPadding: { height: 16 },
+
+  // ── Mode reprise ─────────────────────────────────────────────────────────────
+  resumeToggleRow: {
+    flexDirection: 'row',
+    backgroundColor: '#1C1C1E',
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 16,
+    gap: 3,
+  },
+  resumeToggleBtn: {
+    flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10,
+  },
+  resumeToggleBtnActive: { backgroundColor: '#F5A623' },
+  resumeToggleBtnText: { color: '#888', fontSize: 13, fontWeight: '500' },
+  resumeToggleBtnTextActive: { color: '#000', fontWeight: '700' },
+  resumePlayerSection: { marginBottom: 12 },
+  resumePlayerHeader: {
+    color: '#888',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  exhaustedBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3C3C3E',
+    backgroundColor: 'transparent',
+  },
+  exhaustedBtnActive: {
+    borderColor: '#F5A623',
+    backgroundColor: '#2A1E00',
+  },
+  exhaustedBtnText: { color: '#666', fontSize: 13, fontWeight: '600' },
+  exhaustedBtnTextActive: { color: '#F5A623' },
 });
