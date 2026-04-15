@@ -89,6 +89,9 @@ export interface Translations {
   periodTimeLeft: string;
   movesPlayed: string;
 
+  // User presets
+  presetNamePlaceholder: string;
+
   // Preset names
   presetNames: {
     blitz: string;
@@ -182,6 +185,8 @@ const fr: Translations = {
   suddenDeath: 'Mort subite',
   moveCount: (n) => `${n} coup${n > 1 ? 's' : ''}`,
 
+  presetNamePlaceholder: 'Nom du préréglage',
+
   presetNames: {
     blitz: 'Blitz',
     club: 'Club',
@@ -273,6 +278,8 @@ const en: Translations = {
   perMove: (inc) => `+${inc}s / move`,
   suddenDeath: 'Sudden death',
   moveCount: (n) => `${n} move${n > 1 ? 's' : ''}`,
+
+  presetNamePlaceholder: 'Preset name',
 
   presetNames: {
     blitz: 'Blitz',
@@ -366,6 +373,8 @@ const ko: Translations = {
   suddenDeath: '절대 시간',
   moveCount: (n) => `${n}수`,
 
+  presetNamePlaceholder: '프리셋 이름',
+
   presetNames: {
     blitz: '블리츠',
     club: '클럽',
@@ -458,6 +467,8 @@ const ja: Translations = {
   suddenDeath: '切れ負け',
   moveCount: (n) => `${n}手`,
 
+  presetNamePlaceholder: 'プリセット名',
+
   presetNames: {
     blitz: 'ブリッツ',
     club: 'クラブ',
@@ -549,6 +560,8 @@ const zh: Translations = {
   perMove: (inc) => `+${inc}秒/手`,
   suddenDeath: '包棋',
   moveCount: (n) => `${n}手`,
+
+  presetNamePlaceholder: '预设名称',
 
   presetNames: {
     blitz: '快棋',

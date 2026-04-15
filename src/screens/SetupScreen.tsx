@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -18,6 +19,7 @@ import {
   FischerConfig,
   AbsoluteConfig,
   Preset,
+  UserPreset,
   Player,
   BlackSide,
   DisplayStyle,
@@ -26,6 +28,7 @@ import {
 } from '../types';
 import { Translations, Language, LANGUAGE_LABELS } from '../i18n/translations';
 import { PRESETS } from '../logic/presets';
+import { loadUserPresets, addUserPreset, removeUserPreset } from '../logic/userPresets';
 import { useTranslation } from '../i18n/LanguageContext';
 
 function formatPresetDesc(config: TimeControlConfig, t: Translations): string {
@@ -303,6 +306,11 @@ export default function SetupScreen({ onStart }: Props) {
   // Absolute
   const [absMainMins, setAbsMainMins] = useState(30);
 
+  // User presets
+  const [userPresets, setUserPresets] = useState<UserPreset[]>([]);
+  const [addingPreset, setAddingPreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState('');
+
   // Resume mode
   const [resumeEnabled, setResumeEnabled] = useState(false);
 
@@ -340,7 +348,7 @@ export default function SetupScreen({ onStart }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (resumeEnabled) syncResume(buildResumeInit(activeTab)); }, [activeTab]);
 
-  // Restauration du dernier réglage
+  // Restauration du dernier réglage + user presets
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
       if (!raw) return;
@@ -361,6 +369,7 @@ export default function SetupScreen({ onStart }: Props) {
         if (saved.displayStyle) setDisplayStyle(saved.displayStyle);
       } catch {}
     });
+    loadUserPresets().then(setUserPresets);
   }, []);
 
   const saveConfig = (overrides: Record<string, unknown> = {}) => {
@@ -405,8 +414,7 @@ export default function SetupScreen({ onStart }: Props) {
     }
   };
 
-  const applyPreset = (preset: Preset) => {
-    const c = preset.config;
+  const applyConfig = (c: TimeControlConfig) => {
     setActiveTab(c.type);
     let mainMins = 0, periods = byoPeriods, periodSecs = byoPeriodSecs, canMins = canPeriodMins;
     if (c.type === 'byoyomi') {
@@ -423,6 +431,40 @@ export default function SetupScreen({ onStart }: Props) {
       setAbsMainMins(mainMins);
     }
     if (resumeEnabled) syncResume(buildResumeInit(c.type, mainMins, periods, periodSecs, canMins));
+  };
+
+  const applyPreset = (preset: Preset) => applyConfig(preset.config);
+
+  const isConfigMatch = (a: TimeControlConfig, b: TimeControlConfig): boolean => {
+    if (a.type !== b.type) return false;
+    switch (a.type) {
+      case 'byoyomi': {
+        const bb = b as ByoyomiConfig;
+        return a.mainTime === bb.mainTime && a.periods === bb.periods && a.periodTime === bb.periodTime;
+      }
+      case 'canadian': {
+        const bc = b as CanadianConfig;
+        return a.mainTime === bc.mainTime && a.movesPerPeriod === bc.movesPerPeriod && a.periodTime === bc.periodTime;
+      }
+      case 'fischer': {
+        const bf = b as FischerConfig;
+        return a.mainTime === bf.mainTime && a.increment === bf.increment;
+      }
+      case 'absolute':
+        return a.mainTime === (b as AbsoluteConfig).mainTime;
+    }
+  };
+
+  const confirmAddPreset = () => {
+    const config = buildConfig();
+    const name = newPresetName.trim() || formatPresetDesc(config, t);
+    addUserPreset(userPresets, { name, config }).then(setUserPresets);
+    setAddingPreset(false);
+    setNewPresetName('');
+  };
+
+  const deleteUserPreset = (index: number) => {
+    removeUserPreset(userPresets, index).then(setUserPresets);
   };
 
   useEffect(() => {
@@ -496,13 +538,57 @@ export default function SetupScreen({ onStart }: Props) {
             {PRESETS.filter((p) => p.config.type === activeTab).map((preset) => (
               <TouchableOpacity
                 key={preset.nameKey}
-                style={s.presetCard}
+                style={[s.presetCard, isConfigMatch(preset.config, buildConfig()) && s.presetCardActive]}
                 onPress={() => applyPreset(preset)}
               >
                 <Text style={s.presetName}>{t.presetNames[preset.nameKey]}</Text>
                 <Text style={s.presetDesc}>{formatPresetDesc(preset.config, t)}</Text>
               </TouchableOpacity>
             ))}
+            {userPresets
+              .map((preset, globalIndex) => ({ preset, globalIndex }))
+              .filter(({ preset }) => preset.config.type === activeTab)
+              .map(({ preset, globalIndex }) => (
+                <TouchableOpacity
+                  key={`user-${globalIndex}`}
+                  style={[s.presetCard, s.presetCardUser, isConfigMatch(preset.config, buildConfig()) && s.presetCardActive]}
+                  onPress={() => applyConfig(preset.config)}
+                >
+                  <Text style={s.presetName}>{preset.name}</Text>
+                  <Text style={s.presetDesc}>{formatPresetDesc(preset.config, t)}</Text>
+                  <TouchableOpacity
+                    style={s.userPresetDelete}
+                    onPress={() => deleteUserPreset(globalIndex)}
+                    hitSlop={{ top: 4, right: 4, bottom: 8, left: 8 }}
+                  >
+                    <Text style={s.userPresetDeleteIcon}>✕</Text>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ))
+            }
+            {addingPreset ? (
+              <View style={[s.presetCard, s.presetCardAdding]}>
+                <TextInput
+                  style={s.presetNameInput}
+                  value={newPresetName}
+                  onChangeText={setNewPresetName}
+                  placeholder={t.presetNamePlaceholder}
+                  placeholderTextColor="#555"
+                  autoFocus
+                  onSubmitEditing={confirmAddPreset}
+                />
+                <TouchableOpacity onPress={confirmAddPreset}>
+                  <Text style={s.presetAddConfirm}>✓</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[s.presetCard, s.presetCardAdd]}
+                onPress={() => setAddingPreset(true)}
+              >
+                <Text style={s.presetAddIcon}>＋</Text>
+              </TouchableOpacity>
+            )}
           </ScrollView>
           {showChevron && (
             <View style={s.presetChevron} pointerEvents="none">
@@ -809,6 +895,56 @@ const s = StyleSheet.create({
   },
   presetName: { color: '#FFF', fontSize: 14, fontWeight: '600' },
   presetDesc: { color: '#888', fontSize: 12, marginTop: 2 },
+
+  presetCardActive: {
+    borderWidth: 1.5,
+    borderColor: '#F5A623',
+  },
+  presetCardUser: {},
+  userPresetDelete: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+  },
+  userPresetDeleteIcon: {
+    color: '#F5A623',
+    fontSize: 10,
+    fontWeight: '700' as const,
+    opacity: 0.7,
+  },
+  presetCardAdding: {
+    borderWidth: 1,
+    borderColor: '#F5A623',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    minWidth: 160,
+  },
+  presetNameInput: {
+    flex: 1,
+    color: '#FFF',
+    fontSize: 14,
+    padding: 0,
+  },
+  presetAddConfirm: {
+    color: '#F5A623',
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  presetCardAdd: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minWidth: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  presetAddIcon: {
+    color: '#F5A623',
+    fontSize: 24,
+    fontWeight: '300',
+  },
 
   tabs: {
     flexDirection: 'row',

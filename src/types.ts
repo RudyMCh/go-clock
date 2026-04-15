@@ -85,3 +85,8 @@ export interface Preset {
   nameKey: PresetNameKey;
   config: TimeControlConfig;
 }
+
+export interface UserPreset {
+  name: string;
+  config: TimeControlConfig;
+}
