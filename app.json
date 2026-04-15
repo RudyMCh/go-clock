@@ -2,7 +2,7 @@
   "expo": {
     "name": "Go Clock",
     "slug": "go-clock",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,11 +17,11 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "minSdkVersion": 23
+      "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      ["expo-build-properties", { "android": { "minSdkVersion": 24 } }]
     ],
     "extra": {
       "eas": {

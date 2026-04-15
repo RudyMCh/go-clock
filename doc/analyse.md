@@ -37,10 +37,10 @@ L'accélération se déclenche silencieusement — aucune modification visuelle,
 
 ### TODO
 
-- [ ] Modifier `RepeatButton` pour ajouter `onFastAction?` et la bascule automatique à 2s
-- [ ] Mettre à jour `StepperProps` et `Stepper` pour passer `onFastIncrease?` / `onFastDecrease?`
-- [ ] Brancher les fast actions sur les 4 steppers de temps principal (byoyomi, canadien, fischer, absolu)
-- [ ] Tester sur device : vérifier que la bascule est fluide et que le cleanup fonctionne sur `onPressOut`
+- [x] Modifier `RepeatButton` pour ajouter `onFastAction?` et la bascule automatique à 2s
+- [x] Mettre à jour `StepperProps` et `Stepper` pour passer `onFastIncrease?` / `onFastDecrease?`
+- [x] Brancher les fast actions sur les 4 steppers de temps principal (byoyomi, canadien, fischer, absolu)
+- [x] Tester sur device : vérifier que la bascule est fluide et que le cleanup fonctionne sur `onPressOut`
 
 ---
 

@@ -73,22 +73,36 @@ function LanguageSelector() {
 
 // ── Bouton répétitif (appui long) ─────────────────────────────────────────────
 
-function RepeatButton({ onAction, disabled, children }: {
-  onAction: () => void; disabled?: boolean; children: React.ReactNode;
+function RepeatButton({ onAction, onFastAction, disabled, children }: {
+  onAction: () => void; onFastAction?: () => void; disabled?: boolean; children: React.ReactNode;
 }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionRef = useRef(onAction);
+  const fastActionRef = useRef(onFastAction);
   actionRef.current = onAction;
+  fastActionRef.current = onFastAction;
 
   const stop = () => {
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+    if (fastTimeoutRef.current) { clearTimeout(fastTimeoutRef.current); fastTimeoutRef.current = null; }
+  };
+
+  const startLong = () => {
+    intervalRef.current = setInterval(() => actionRef.current(), 80);
+    if (fastActionRef.current) {
+      fastTimeoutRef.current = setTimeout(() => {
+        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+        intervalRef.current = setInterval(() => fastActionRef.current?.(), 150);
+      }, 2000);
+    }
   };
 
   return (
     <TouchableOpacity
       style={[s.stepBtn, disabled && s.stepBtnDisabled]}
       onPress={disabled ? undefined : onAction}
-      onLongPress={() => { intervalRef.current = setInterval(() => actionRef.current(), 80); }}
+      onLongPress={startLong}
       onPressOut={stop}
       delayLongPress={350}
       disabled={disabled}
@@ -107,16 +121,18 @@ interface StepperProps {
   onIncrease: () => void;
   onDecrease: () => void;
   canDecrease: boolean;
+  onFastIncrease?: () => void;
+  onFastDecrease?: () => void;
 }
 
-function Stepper({ label, value, unit, onIncrease, onDecrease, canDecrease }: StepperProps) {
+function Stepper({ label, value, unit, onIncrease, onDecrease, canDecrease, onFastIncrease, onFastDecrease }: StepperProps) {
   return (
     <View style={s.stepperRow}>
       <Text style={s.stepperLabel}>{label}</Text>
       <View style={s.stepperControls}>
-        <RepeatButton onAction={onDecrease} disabled={!canDecrease}>−</RepeatButton>
+        <RepeatButton onAction={onDecrease} onFastAction={onFastDecrease} disabled={!canDecrease}>−</RepeatButton>
         <Text style={s.stepperValue}>{value} {unit}</Text>
-        <RepeatButton onAction={onIncrease}>+</RepeatButton>
+        <RepeatButton onAction={onIncrease} onFastAction={onFastIncrease}>+</RepeatButton>
       </View>
     </View>
   );
@@ -506,6 +522,8 @@ export default function SetupScreen({ onStart }: Props) {
                 onIncrease={() => setByoMainMins((v) => v + 1)}
                 onDecrease={() => setByoMainMins((v) => Math.max(0, v - 1))}
                 canDecrease={byoMainMins > 0}
+                onFastIncrease={() => setByoMainMins((v) => v + 5)}
+                onFastDecrease={() => setByoMainMins((v) => Math.max(0, v - 5))}
               />
               <Stepper
                 label={t.numberOfPeriods}
@@ -535,6 +553,8 @@ export default function SetupScreen({ onStart }: Props) {
                 onIncrease={() => setCanMainMins((v) => v + 1)}
                 onDecrease={() => setCanMainMins((v) => Math.max(0, v - 1))}
                 canDecrease={canMainMins > 0}
+                onFastIncrease={() => setCanMainMins((v) => v + 5)}
+                onFastDecrease={() => setCanMainMins((v) => Math.max(0, v - 5))}
               />
               <Stepper
                 label={t.movesPerPeriod}
@@ -564,6 +584,8 @@ export default function SetupScreen({ onStart }: Props) {
                 onIncrease={() => setFisMainMins((v) => v + 1)}
                 onDecrease={() => setFisMainMins((v) => Math.max(1, v - 1))}
                 canDecrease={fisMainMins > 1}
+                onFastIncrease={() => setFisMainMins((v) => v + 5)}
+                onFastDecrease={() => setFisMainMins((v) => Math.max(1, v - 5))}
               />
               <Stepper
                 label={t.incrementPerMove}
@@ -584,6 +606,8 @@ export default function SetupScreen({ onStart }: Props) {
               onIncrease={() => setAbsMainMins((v) => v + 1)}
               onDecrease={() => setAbsMainMins((v) => Math.max(1, v - 1))}
               canDecrease={absMainMins > 1}
+              onFastIncrease={() => setAbsMainMins((v) => v + 5)}
+              onFastDecrease={() => setAbsMainMins((v) => Math.max(1, v - 5))}
             />
           )}
         </View>
