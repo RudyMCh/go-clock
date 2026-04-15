@@ -79,7 +79,7 @@ export interface ResumeConfig {
   white: ResumePlayerState;
 }
 
-export type PresetNameKey = 'blitz' | 'online' | 'club' | 'egf' | 'long' | 'rapid' | 'standard';
+export type PresetNameKey = 'blitz' | 'club' | 'long' | 'rapid' | 'standard' | 'tournament' | 'championship';
 
 export interface Preset {
   nameKey: PresetNameKey;

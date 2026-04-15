@@ -92,12 +92,12 @@ export interface Translations {
   // Preset names
   presetNames: {
     blitz: string;
-    online: string;
     club: string;
-    egf: string;
     long: string;
     rapid: string;
     standard: string;
+    tournament: string;
+    championship: string;
   };
 }
 
@@ -184,12 +184,12 @@ const fr: Translations = {
 
   presetNames: {
     blitz: 'Blitz',
-    online: 'En ligne',
     club: 'Club',
-    egf: 'EGF',
     long: 'Long',
     rapid: 'Rapide',
     standard: 'Standard',
+    tournament: 'Tournoi',
+    championship: 'Championnat',
   },
 };
 
@@ -276,12 +276,12 @@ const en: Translations = {
 
   presetNames: {
     blitz: 'Blitz',
-    online: 'Online',
     club: 'Club',
-    egf: 'EGF',
     long: 'Long',
     rapid: 'Rapid',
     standard: 'Standard',
+    tournament: 'Tournament',
+    championship: 'Championship',
   },
 };
 
@@ -368,12 +368,12 @@ const ko: Translations = {
 
   presetNames: {
     blitz: '블리츠',
-    online: '온라인',
     club: '클럽',
-    egf: 'EGF',
     long: '장기',
     rapid: '빠른',
     standard: '기본',
+    tournament: '토너먼트',
+    championship: '챔피언십',
   },
 };
 
@@ -460,12 +460,12 @@ const ja: Translations = {
 
   presetNames: {
     blitz: 'ブリッツ',
-    online: 'オンライン',
     club: 'クラブ',
-    egf: 'EGF',
     long: '長時間',
     rapid: '早碁',
     standard: '標準',
+    tournament: '大会',
+    championship: '選手権',
   },
 };
 
@@ -552,12 +552,12 @@ const zh: Translations = {
 
   presetNames: {
     blitz: '快棋',
-    online: '在线',
     club: '俱乐部',
-    egf: 'EGF',
     long: '慢棋',
     rapid: '快速',
     standard: '标准',
+    tournament: '赛事',
+    championship: '锦标赛',
   },
 };
 

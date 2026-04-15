@@ -165,36 +165,36 @@ Atteindre 150 min depuis 0 avec l'incrément actuel (+1 min à 80ms) prend ~20 s
 ### TODO
 
 **Byoyomi**
-- [ ] Changer `blitz` : 5 min → 10 min
-- [ ] Supprimer `online`
-- [ ] Supprimer `egf` (45 min — cadence inexacte)
-- [ ] Renommer `long` (60 min) → `standard` + ajuster i18n
-- [ ] Ajouter `tournament` : 90 min + 3×45s
-- [ ] Ajouter `championship` : 150 min + 5×60s
+- [x] Changer `blitz` : 5 min → 10 min
+- [x] Supprimer `online`
+- [x] Supprimer `egf` (45 min — cadence inexacte)
+- [x] Renommer `long` (60 min) → `standard` + ajuster i18n
+- [x] Ajouter `tournament` : 90 min + 3×45s
+- [x] Ajouter `championship` : 150 min + 5×60s
 
 **Canadien**
-- [ ] Changer `blitz` : remplacer `rapid` (20 min) par un vrai blitz 10 min + 20 coups/5 min
-- [ ] Renommer `long` (45 min) → `club` + ajuster à 15 coups/5 min
-- [ ] Renommer `standard` (30 min) → supprimer ou absorber dans `club`
-- [ ] Ajouter `standard` : 60 min + 15 coups/5 min (FFG Coupe Maître Lim)
-- [ ] Ajouter `tournament` : 75 min + 15 coups/5 min (FFG Champ. Amateur)
-- [ ] Ajouter `championship` : 90 min + 15 coups/5 min (FFG Champ. Open)
+- [x] Changer `blitz` : remplacer `rapid` (20 min) par un vrai blitz 10 min + 20 coups/5 min
+- [x] Renommer `long` (45 min) → `club` + ajuster à 15 coups/5 min
+- [x] Renommer `standard` (30 min) → supprimer ou absorber dans `club`
+- [x] Ajouter `standard` : 60 min + 15 coups/5 min (FFG Coupe Maître Lim)
+- [x] Ajouter `tournament` : 75 min + 15 coups/5 min (FFG Champ. Amateur)
+- [x] Ajouter `championship` : 90 min + 15 coups/5 min (FFG Champ. Open)
 
 **Fischer**
-- [ ] Changer `blitz` : 5 min + 5s → 10 min + 10s
-- [ ] Supprimer `rapid` (15 min + 10s)
-- [ ] Renommer `standard` (30 min + 15s) → `club` : 25 min + 15s
-- [ ] Renommer `long` (60 min + 30s) → `championship` : 60 min + **20s** (FFG Open)
-- [ ] Ajouter `standard` : 40 min + 20s (FFG alternative clubs)
-- [ ] Ajouter `tournament` : 50 min + 20s (FFG Champ. Amateur)
+- [x] Changer `blitz` : 5 min + 5s → 10 min + 10s
+- [x] Supprimer `rapid` (15 min + 10s)
+- [x] Renommer `standard` (30 min + 15s) → `club` : 25 min + 15s
+- [x] Renommer `long` (60 min + 30s) → `championship` : 60 min + **20s** (FFG Open)
+- [x] Ajouter `standard` : 40 min + 20s (FFG alternative clubs)
+- [x] Ajouter `tournament` : 50 min + 20s (FFG Champ. Amateur)
 
 **Absolu**
-- [ ] Changer `blitz` : 5 min → 10 min
+- [x] Changer `blitz` : 5 min → 10 min (déjà à 10 min dans le code)
 
 **Transversal**
-- [ ] Vérifier/mettre à jour toutes les clés `PresetNameKey` dans `src/types.ts`
-- [ ] Vérifier les libellés i18n dans `src/i18n/` pour les noms modifiés
-- [ ] Vérifier que l'accélération stepper (+5 min) est en place avant de retirer les presets intermédiaires
+- [x] Vérifier/mettre à jour toutes les clés `PresetNameKey` dans `src/types.ts`
+- [x] Vérifier les libellés i18n dans `src/i18n/` pour les noms modifiés
+- [x] Vérifier que l'accélération stepper (+5 min) est en place avant de retirer les presets intermédiaires
 
 ---
 
